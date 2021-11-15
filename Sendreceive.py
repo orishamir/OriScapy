@@ -96,7 +96,7 @@ def parseEther(data):
 
         # print(hex(hwtype), hex(ptype), hex(hwlen), hex(plen), hex(op), hwsrc, psrc, hwdst, pdst)
         # print(dst, src, hex(type))
-        return pkt/ARP(hwtype=hwtype, ptype=ptype, opcode=op, dst_ip=pdst, dst_mac=hwdst, src_ip=psrc, psize=plen, hwsize=hwlen)
+        return pkt/ARP(hwtype=hwtype, ptype=ptype, opcode=op, dst_ip=pdst, dst_mac=hwdst, src_ip=psrc, src_mac=hwsrc,psize=plen, hwsize=hwlen)
     elif type == ProtocolTypes.IPv4:
         # print("An IP packet")
         pkt = parseIP(data, pkt)
@@ -189,7 +189,7 @@ def send(pkt: Ether):
 
 def is_response(res, pkt):
     # Check if the layers are not the same.
-    if ((IP in res) != (IP in pkt)) or ((UDP in res) != (UDP in pkt)) or ((ICMP in res) != (ICMP in pkt)):
+    if ((IP in res) != (IP in pkt)) or ((UDP in res) != (UDP in pkt)) or ((ICMP in res) != (ICMP in pkt)) or ((ARP in res) != (ARP in pkt)):
         return False
 
     if IP in pkt:
@@ -204,6 +204,10 @@ def is_response(res, pkt):
             if not (res[UDP].dport == pkt[UDP].sport and res[UDP].sport == pkt[UDP].dport):
                 return False
             return True
+    elif ARP in pkt:
+        resarp: ARP = res[ARP]
+        pktarp: ARP = pkt[ARP]
+        return resarp.target_ip == pktarp.sender_ip and resarp.hwsize == pktarp.hwsize and resarp.opcode != pktarp.opcode
 
 def sendreceive(pkt: Ether):
     send(pkt)
@@ -235,9 +239,11 @@ pkt = Ether(dst="98:1e:19:7a:b3:24")/IP(dst="8.8.8.8")/UDP(dport=53)/DNS(qd=DNSQ
 #pkt = bytes(DNS(qd=[DNSQR("facebook.com")], rd=1))
 # print(pkt)
 #print(sendreceive(pkt))
-print(parseDNS(b"\xb0\x74\x81\x80\x00\x01\x00\x00\x00\x01\x00\x00\x08\x66\x61\x63" \
-b"\x65\x62\x6f\x6f\x6b\x03\x63\x6f\x6d\x00\x00\x05\x00\x01\xc0\x0c" \
-b"\x00\x06\x00\x01\x00\x00\x07\x08\x00\x21\x01\x61\x02\x6e\x73\xc0" \
-b"\x0c\x03\x64\x6e\x73\xc0\x0c\x57\xb0\xe6\xd1\x00\x00\x38\x40\x00" \
-b"\x00\x07\x08\x00\x09\x3a\x80\x00\x00\x01\x2c"))
-# print(parseDNS(b'\x00\x00\x01\x00\x00\x01\x00\x01\x00\x00\x00\x00\x06google\x03com\x00\x00\x01\x00\x01\x06google\x03com\x00\x00\x01\x00\x01\x00\x00\x00\x00\x00\x04\xc0\xa8\x01\x01'))
+# print(parseDNS(b"\xb0\x74\x81\x80\x00\x01\x00\x00\x00\x01\x00\x00\x08\x66\x61\x63" \
+# b"\x65\x62\x6f\x6f\x6b\x03\x63\x6f\x6d\x00\x00\x05\x00\x01\xc0\x0c" \
+# b"\x00\x06\x00\x01\x00\x00\x07\x08\x00\x21\x01\x61\x02\x6e\x73\xc0" \
+# b"\x0c\x03\x64\x6e\x73\xc0\x0c\x57\xb0\xe6\xd1\x00\x00\x38\x40\x00" \
+# b"\x00\x07\x08\x00\x09\x3a\x80\x00\x00\x01\x2c"))
+# # print(parseDNS(b'\x00\x00\x01\x00\x00\x01\x00\x01\x00\x00\x00\x00\x06google\x03com\x00\x00\x01\x00\x01\x06google\x03com\x00\x00\x01\x00\x01\x00\x00\x00\x00\x00\x04\xc0\xa8\x01\x01'))
+pkt = Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(dst_ip="192.168.1.1")
+print(sendreceive(pkt))

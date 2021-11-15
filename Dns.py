@@ -68,12 +68,12 @@ class DNSRR(Layer):
     rdlength   = None
     rdata      = None
 
-    def __init__(self, rdata=None, ttl=None, type=None, class_=None, name=None):
-        self.name = name
-        self.type = type
+    def __init__(self, name=None, type=None, class_=None, ttl=None, rdata=None):
+        self.name   = name
+        self.type   = type
         self.class_ = class_
-        self.ttl = ttl
-        self.rdata = rdata
+        self.ttl    = ttl
+        self.rdata  = rdata
 
     def __str__(self):
         self.type = QTYPES_dict[self.type]
