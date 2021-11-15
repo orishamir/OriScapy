@@ -36,7 +36,6 @@ class Layer:
                 ret += f"       {Fore.MAGENTA}{key:<15} {RST}={Fore.LIGHTGREEN_EX} {val}{RST}\n"
 
         if hasattr(self, 'data') and not isinstance(self.data, bytes) and self.data:
-            print(repr(self.data))
             ret += '\n'
             s = str(self.data)
             s = [f"    {i}" for i in s.splitlines()]

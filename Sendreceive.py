@@ -180,7 +180,6 @@ def parseDNS(data):
                qd=qd, an=an)
 
     if data:
-        print(data)
         pkt = pkt/Raw(load=data)
     return pkt
 
