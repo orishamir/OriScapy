@@ -201,4 +201,3 @@ class DNS(Layer):
         self.ancount = int(len(self.an)) if self.an else 0
         self.nscount = int(len(self.ns)) if self.ns else 0
         self.arcount = int(len(self.ar)) if self.ar else 0
-

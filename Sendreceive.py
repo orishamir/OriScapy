@@ -106,7 +106,6 @@ def parseEther(data):
 def parseData(data, pkt):
     if UDP in pkt:
         if 53 in (pkt[UDP].dport, pkt[UDP].sport):
-            print(data)
             return pkt/parseDNS(data)
         elif 67 in (pkt[UDP].dport, pkt[UDP].sport):
             # DHCP
@@ -124,7 +123,6 @@ def parseDNS(data):
                 qname += chr(tmp.pop(0))
             qname += '.'
         qname = qname.strip('.')
-        print(qname)
         return qname
 
     copydata = data
@@ -144,7 +142,6 @@ def parseDNS(data):
         return DNS(rd=RD, ra=RA, id=id, rcode=rcode, opcode=opcode, qr=QR,
                    qdcount=qdcount, ancount=ancount, nscount=nscount, arcount=arcount)
 
-    print(data)
     qd = []
     an = []
     for section in ['qd', 'an']:
@@ -155,7 +152,7 @@ def parseDNS(data):
             if section == 'qd':
                 qname = parseName(data)
                 data = data[data.index(b'\x00')+1:]
-                qclass, qtype = struct.unpack('!HH', data[:4])
+                qtype, qclass = struct.unpack('!HH', data[:4])
                 data = data[4:]
                 qd.append(DNSQR(qname=qname, qtype=qtype, qclass=qclass))
             elif section == 'an':
@@ -178,9 +175,14 @@ def parseDNS(data):
                     data = data[4:]
                 an.append(DNSRR(name=rname, type=rtype, class_=rclass, ttl=ttl, rdata=rdata))
 
-    return DNS(rd=RD, ra=RA, id=id, rcode=rcode, opcode=opcode, qr=QR,
+    pkt = DNS(rd=RD, ra=RA, id=id, rcode=rcode, opcode=opcode, qr=QR,
                qdcount=qdcount, ancount=ancount, nscount=nscount, arcount=arcount,
                qd=qd, an=an)
+
+    if data:
+        print(data)
+        pkt = pkt/Raw(load=data)
+    return pkt
 
 def send(pkt: Ether):
     assert isinstance(pkt, Ether), 'pkt must be of type Ethernet to be sent.'
@@ -223,7 +225,7 @@ def sendreceive(pkt: Ether):
 # b"\x08\x08\x00\x35\x00\x35\x00\x24\x19\x9c\x00\x00\x01\x00\x00\x01" \
 # b"\x00\x00\x00\x00\x00\x00\x06\x67\x6f\x6f\x67\x6c\x65\x03\x63\x6f" \
 # b"\x6d\x00\x00\x01\x00\x01"
-pkt = Ether(dst="98:1e:19:7a:b3:24")/IP(dst="8.8.8.8")/UDP(dport=53)/DNS(qd=DNSQR("facebook.com"))
+pkt = Ether(dst="98:1e:19:7a:b3:24")/IP(dst="8.8.8.8")/UDP(dport=53)/DNS(qd=DNSQR("facebook.com", qtype=QTYPES.CNAME))
 # ret = sendreceive(pkt)
 
 #r = recv_sock.recvfrom(4096)
@@ -233,12 +235,10 @@ pkt = Ether(dst="98:1e:19:7a:b3:24")/IP(dst="8.8.8.8")/UDP(dport=53)/DNS(qd=DNSQ
 # print(ret)
 #pkt = bytes(DNS(qd=[DNSQR("facebook.com")], rd=1))
 # print(pkt)
-print(sendreceive(pkt))
-"""print(parseEther(b"\x8c\x16\x45\xe9\x12\x91\x98\x1e\x19\x7a\xb3\x24\x08\x00\x45\x00" \
-b"\x00\x4a\xfc\x2f\x00\x00\x37\x11\xb5\x8c\x08\x08\x08\x08\xc0\xa8" \
-b"\x01\x2f\x00\x35\x57\x06\x00\x36\x27\xc2\x39\xbb\x81\x80\x00\x01" \
-b"\x00\x01\x00\x00\x00\x00\x08\x66\x61\x63\x65\x62\x6f\x6f\x6b\x03" \
-b"\x63\x6f\x6d\x00\x00\x01\x00\x01\xc0\x0c\x00\x01\x00\x01\x00\x00" \
-b"\x00\x29\x00\x04\x9d\xf0\x1b\x23"
-))"""
+#print(sendreceive(pkt))
+print(parseDNS(b"\xb0\x74\x81\x80\x00\x01\x00\x00\x00\x01\x00\x00\x08\x66\x61\x63" \
+b"\x65\x62\x6f\x6f\x6b\x03\x63\x6f\x6d\x00\x00\x05\x00\x01\xc0\x0c" \
+b"\x00\x06\x00\x01\x00\x00\x07\x08\x00\x21\x01\x61\x02\x6e\x73\xc0" \
+b"\x0c\x03\x64\x6e\x73\xc0\x0c\x57\xb0\xe6\xd1\x00\x00\x38\x40\x00" \
+b"\x00\x07\x08\x00\x09\x3a\x80\x00\x00\x01\x2c"))
 # print(parseDNS(b'\x00\x00\x01\x00\x00\x01\x00\x01\x00\x00\x00\x00\x06google\x03com\x00\x00\x01\x00\x01\x06google\x03com\x00\x00\x01\x00\x01\x00\x00\x00\x00\x00\x04\xc0\xa8\x01\x01'))
