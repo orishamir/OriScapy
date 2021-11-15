@@ -85,6 +85,4 @@ class ARP(Layer):
         self.opcode = self.OPCODES_DICT[self.opcode]
         self.hardwareType = self.HardwareTypes_dict[self.hardwareType]
         self.protocolType = ProtocolTypes_dict[self.protocolType]
-
         return ret
-

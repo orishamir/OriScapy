@@ -162,7 +162,6 @@ def parseDNS(data):
                     pointerVal = ((data[0] << 8) | data[1]) & 0b0011111111111111
                     rname = parseName(copydata[pointerVal:])
                     data = data[2:]
-
                 else:
                     rname = parseName(data[:data.index(b'\x00')+1])
                     data = data[data.index(b'\x00') + 1:]
@@ -178,7 +177,6 @@ def parseDNS(data):
     pkt = DNS(rd=RD, ra=RA, id=id, rcode=rcode, opcode=opcode, qr=QR,
                qdcount=qdcount, ancount=ancount, nscount=nscount, arcount=arcount,
                qd=qd, an=an)
-
     if data:
         pkt = pkt/Raw(load=data)
     return pkt
@@ -189,7 +187,8 @@ def send(pkt: Ether):
 
 def is_response(res, pkt):
     # Check if the layers are not the same.
-    if ((IP in res) != (IP in pkt)) or ((UDP in res) != (UDP in pkt)) or ((ICMP in res) != (ICMP in pkt)) or ((ARP in res) != (ARP in pkt)):
+    if ((IP in res) != (IP in pkt)) or ((UDP in res) != (UDP in pkt)) or ((ICMP in res) != (ICMP in pkt))\
+        or ((ARP in res) != (ARP in pkt)):
         return False
 
     if IP in pkt:
@@ -221,29 +220,3 @@ def sendreceive(pkt: Ether):
             continue
         if is_response(res, pkt):
             return res
-
-
-# pkt = b"\x98\x1e\x19\x7a\xb3\x24\x8c\x16\x45\xe9\x12\x91\x08\x00\x45\x00" \
-# b"\x00\x38\x00\x01\x00\x00\x40\x11\xa8\xcd\xc0\xa8\x01\x2f\x08\x08" \
-# b"\x08\x08\x00\x35\x00\x35\x00\x24\x19\x9c\x00\x00\x01\x00\x00\x01" \
-# b"\x00\x00\x00\x00\x00\x00\x06\x67\x6f\x6f\x67\x6c\x65\x03\x63\x6f" \
-# b"\x6d\x00\x00\x01\x00\x01"
-pkt = Ether(dst="98:1e:19:7a:b3:24")/IP(dst="8.8.8.8")/UDP(dport=53)/DNS(qd=DNSQR("facebook.com", qtype=QTYPES.CNAME))
-# ret = sendreceive(pkt)
-
-#r = recv_sock.recvfrom(4096)
-#print(r)
-#print(len(r[0]))
-
-# print(ret)
-#pkt = bytes(DNS(qd=[DNSQR("facebook.com")], rd=1))
-# print(pkt)
-#print(sendreceive(pkt))
-# print(parseDNS(b"\xb0\x74\x81\x80\x00\x01\x00\x00\x00\x01\x00\x00\x08\x66\x61\x63" \
-# b"\x65\x62\x6f\x6f\x6b\x03\x63\x6f\x6d\x00\x00\x05\x00\x01\xc0\x0c" \
-# b"\x00\x06\x00\x01\x00\x00\x07\x08\x00\x21\x01\x61\x02\x6e\x73\xc0" \
-# b"\x0c\x03\x64\x6e\x73\xc0\x0c\x57\xb0\xe6\xd1\x00\x00\x38\x40\x00" \
-# b"\x00\x07\x08\x00\x09\x3a\x80\x00\x00\x01\x2c"))
-# # print(parseDNS(b'\x00\x00\x01\x00\x00\x01\x00\x01\x00\x00\x00\x00\x06google\x03com\x00\x00\x01\x00\x01\x06google\x03com\x00\x00\x01\x00\x01\x00\x00\x00\x00\x00\x04\xc0\xa8\x01\x01'))
-pkt = Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(dst_ip="192.168.1.1")
-print(sendreceive(pkt))
