@@ -106,6 +106,7 @@ def parseEther(data):
 def parseData(data, pkt):
     if UDP in pkt:
         if 53 in (pkt[UDP].dport, pkt[UDP].sport):
+            print(data)
             return pkt/parseDNS(data)
         elif 67 in (pkt[UDP].dport, pkt[UDP].sport):
             # DHCP
@@ -113,6 +114,20 @@ def parseData(data, pkt):
     return pkt/Raw(load=data)
 
 def parseDNS(data):
+    def parseName(dta):
+        qname = ''
+        tmp = list(dta[:dta.index(b'\x00') + 1])
+        while tmp:
+            if tmp[0] == '\x00':
+                break
+            for _ in range(tmp.pop(0)):
+                qname += chr(tmp.pop(0))
+            qname += '.'
+        qname = qname.strip('.')
+        print(qname)
+        return qname
+
+    copydata = data
     id, tmp, qdcount, ancount, nscount, arcount = struct.unpack("!HHHHHH", data[:dnsLen])
 
     QR     = tmp >> 15
@@ -129,6 +144,7 @@ def parseDNS(data):
         return DNS(rd=RD, ra=RA, id=id, rcode=rcode, opcode=opcode, qr=QR,
                    qdcount=qdcount, ancount=ancount, nscount=nscount, arcount=arcount)
 
+    print(data)
     qd = []
     an = []
     for section in ['qd', 'an']:
@@ -137,35 +153,30 @@ def parseDNS(data):
             continue
         for _ in range(count):
             if section == 'qd':
-                qname = ''
-                tmp = list(data[:data.index(b'\x00')+1])
-                while tmp:
-                    for _ in range(tmp.pop(0)):
-                        qname += chr(tmp.pop(0))
-                    qname += '.'
-                qname = qname.strip('.')
+                qname = parseName(data)
                 data = data[data.index(b'\x00')+1:]
                 qclass, qtype = struct.unpack('!HH', data[:4])
                 data = data[4:]
                 qd.append(DNSQR(qname=qname, qtype=qtype, qclass=qclass))
             elif section == 'an':
-                rname = ''
-                tmp = list(data[:data.index(b'\x00') + 1])
-                while tmp:
-                    for _ in range(tmp.pop(0)):
-                        rname += chr(tmp.pop(0))
-                    rname += '.'
-                rname = rname.strip('.')
-                data = data[data.index(b'\x00') + 1:]
-                print(rname)
+                #  may be a pointer to the name (offset from DNS header start), or just a name.
+                if (data[0] >> 6) == 0b11:
+                    # is pointer.
+                    pointerVal = ((data[0] << 8) | data[1]) & 0b0011111111111111
+                    rname = parseName(copydata[pointerVal:])
+                    data = data[2:]
 
-                print(data)
+                else:
+                    rname = parseName(data[:data.index(b'\x00')+1])
+                    data = data[data.index(b'\x00') + 1:]
+
                 rclass, rtype, ttl, rdlen = struct.unpack('!HHLH', data[:10])
                 data = data[10:]
                 if rtype == QTYPES.A:
                     rdata = data[:rdlen]
                     rdata = bytesToIpv4(rdata)
-                an = DNSRR(name=rname, type=rtype, class_=rclass, ttl=ttl, rdata=rdata)
+                    data = data[4:]
+                an.append(DNSRR(name=rname, type=rtype, class_=rclass, ttl=ttl, rdata=rdata))
 
     return DNS(rd=RD, ra=RA, id=id, rcode=rcode, opcode=opcode, qr=QR,
                qdcount=qdcount, ancount=ancount, nscount=nscount, arcount=arcount,
@@ -220,5 +231,14 @@ pkt = Ether(dst="98:1e:19:7a:b3:24")/IP(dst="8.8.8.8")/UDP(dport=53)/DNS(qd=DNSQ
 #print(len(r[0]))
 
 # print(ret)
-print(parseDNS(bytes(DNS(qd=[DNSQR("facebook.com"), DNSQR("google.com")]))))
-#print(parseDNS(b'\x00\x00\x01\x00\x00\x01\x00\x01\x00\x00\x00\x00\x06google\x03com\x00\x00\x01\x00\x01\x06google\x03com\x00\x00\x01\x00\x01\x00\x00\x00\x00\x00\x04\xc0\xa8\x01\x01'))
+#pkt = bytes(DNS(qd=[DNSQR("facebook.com")], rd=1))
+# print(pkt)
+print(sendreceive(pkt))
+"""print(parseEther(b"\x8c\x16\x45\xe9\x12\x91\x98\x1e\x19\x7a\xb3\x24\x08\x00\x45\x00" \
+b"\x00\x4a\xfc\x2f\x00\x00\x37\x11\xb5\x8c\x08\x08\x08\x08\xc0\xa8" \
+b"\x01\x2f\x00\x35\x57\x06\x00\x36\x27\xc2\x39\xbb\x81\x80\x00\x01" \
+b"\x00\x01\x00\x00\x00\x00\x08\x66\x61\x63\x65\x62\x6f\x6f\x6b\x03" \
+b"\x63\x6f\x6d\x00\x00\x01\x00\x01\xc0\x0c\x00\x01\x00\x01\x00\x00" \
+b"\x00\x29\x00\x04\x9d\xf0\x1b\x23"
+))"""
+# print(parseDNS(b'\x00\x00\x01\x00\x00\x01\x00\x01\x00\x00\x00\x00\x06google\x03com\x00\x00\x01\x00\x01\x06google\x03com\x00\x00\x01\x00\x01\x00\x00\x00\x00\x00\x04\xc0\xa8\x01\x01'))

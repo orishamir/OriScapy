@@ -177,7 +177,7 @@ class DNS(Layer):
             self.rd = 0x1
 
         if self.opcode is None:
-            self.opcode = 1
+            self.opcode = 0
 
         if self.rcode is None:
             self.rcode = 0
