@@ -86,8 +86,6 @@ class ProtocolTypes:
     default = 0x9000
 
 
-
-
 class AddressesType:
     _ipv6_broadcast = ""  # does not exist lol
     @property

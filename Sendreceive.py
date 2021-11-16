@@ -105,7 +105,7 @@ def parseEther(data):
 
 def parseData(data, pkt):
     if UDP in pkt:
-        if 53 in (pkt[UDP].dport, pkt[UDP].sport):
+        if 53 in (pkt[UDP].dport, pkt[UDP].sport) or 5353 in (pkt[UDP].dport, pkt[UDP].sport):
             return pkt/parseDNS(data)
         elif 67 in (pkt[UDP].dport, pkt[UDP].sport):
             # DHCP
@@ -166,13 +166,16 @@ def parseDNS(data):
                     rname = parseName(data[:data.index(b'\x00')+1])
                     data = data[data.index(b'\x00') + 1:]
 
-                rclass, rtype, ttl, rdlen = struct.unpack('!HHLH', data[:10])
+                rtype, rclass, ttl, rdlen = struct.unpack('!HHLH', data[:10])
                 data = data[10:]
+                rdata = data[:rdlen]
                 if rtype == QTYPES.A:
-                    rdata = data[:rdlen]
                     rdata = bytesToIpv4(rdata)
-                    data = data[4:]
-                an.append(DNSRR(name=rname, type=rtype, class_=rclass, ttl=ttl, rdata=rdata))
+                elif rtype == QTYPES.AAAA:
+                    # rdata = bytesToIpv6()
+                    pass
+                data = data[rdlen:]
+                an.append(DNSRR(name=rname, type=rtype, class_=rclass & 0b011111111111111, ttl=ttl, rdata=rdata))
 
     pkt = DNS(rd=RD, ra=RA, id=id, rcode=rcode, opcode=opcode, qr=QR,
                qdcount=qdcount, ancount=ancount, nscount=nscount, arcount=arcount,
@@ -220,3 +223,11 @@ def sendreceive(pkt: Ether):
             continue
         if is_response(res, pkt):
             return res
+
+print(parseEther(b"\x01\x00\x5e\x00\x00\xfb\x9c\xeb\xe8\xb3\xb4\x47\x08\x00\x45\x00" \
+b"\x00\x4d\x1a\x4d\x40\x00\xff\x11\xbe\xa4\xc0\xa8\x01\x0a\xe0\x00" \
+b"\x00\xfb\x14\xe9\x14\xe9\x00\x39\x8b\x33\x00\x00\x84\x00\x00\x00" \
+b"\x00\x01\x00\x00\x00\x00\x0f\x6d\x69\x6c\x69\x6e\x6b\x34\x31\x32" \
+b"\x30\x30\x37\x39\x36\x31\x05\x6c\x6f\x63\x61\x6c\x00\x00\x01\x80" \
+b"\x01\x00\x00\x00\x78\x00\x04\xc0\xa8\x01\x0a"
+))
