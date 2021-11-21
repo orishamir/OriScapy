@@ -30,6 +30,7 @@ class DNSQR(Layer):
         self.qclass = qclass
 
     def __str__(self):
+        self._autocomplete()
         self.qtype = QTYPES_dict[self.qtype]
         ret = super(DNSQR, self).__str__()
         self.qtype = QTYPES_dict[self.qtype]

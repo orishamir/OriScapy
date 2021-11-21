@@ -27,8 +27,9 @@ class Layer:
                 continue
             if 'port' not in key and key != 'ttl' and val not in [0,1] and isinstance(val, int):
                 val = hex(val)
-            if key in ('qd', 'an', 'ns', 'ar') and val:
+            if key in ('qd', 'an') and val:
                 ret += f"       {Fore.MAGENTA}{key}{RST}="
+                #print(val)
                 for dnsr in val:
                     dnsr = f'\n{" "*12}'.join(str(dnsr).split('\n'))
                     ret += f"       {Fore.LIGHTGREEN_EX} {dnsr}{RST}\n"
@@ -52,6 +53,8 @@ class Layer:
         return item in self.data
 
     def __getitem__(self, item):
+        if isinstance(item, int):
+            raise KeyError
         if item not in self:
             raise KeyError(f"{item.__name__} does not exist.")
         if isinstance(self, item):

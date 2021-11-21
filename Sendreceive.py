@@ -114,16 +114,27 @@ def parseData(data, pkt):
 
 def parseDNS(data):
     def parseName(dta):
-        qname = ''
-        tmp = list(dta[:dta.index(b'\x00') + 1])
+        if (dta[0] >> 6) == 0b11:
+            # is pointer.
+            pointerVal = ((dta[0] << 8) | dta[1]) & 0b0011111111111111
+            return parseName(copydata[pointerVal:])
+
+        size = 0
+        name = ''
+        tmp = list(dta)
         while tmp:
-            if tmp[0] == '\x00':
+            if tmp[0] == 0:
                 break
-            for _ in range(tmp.pop(0)):
-                qname += chr(tmp.pop(0))
-            qname += '.'
-        qname = qname.strip('.')
-        return qname
+            size += 1
+            a = tmp.pop(0)
+            for _ in range(a):
+                name += chr(tmp.pop(0))
+                size += 1
+            name += '.'
+            if tmp and (tmp[0] >> 6) == 0b11:
+                return name+parseName(dta[size:])
+        name = name.strip('.')
+        return name
 
     copydata = data
     id, tmp, qdcount, ancount, nscount, arcount = struct.unpack("!HHHHHH", data[:dnsLen])
@@ -157,14 +168,8 @@ def parseDNS(data):
                 qd.append(DNSQR(qname=qname, qtype=qtype, qclass=qclass))
             elif section == 'an':
                 #  may be a pointer to the name (offset from DNS header start), or just a name.
-                if (data[0] >> 6) == 0b11:
-                    # is pointer.
-                    pointerVal = ((data[0] << 8) | data[1]) & 0b0011111111111111
-                    rname = parseName(copydata[pointerVal:])
-                    data = data[2:]
-                else:
-                    rname = parseName(data[:data.index(b'\x00')+1])
-                    data = data[data.index(b'\x00') + 1:]
+                rname = parseName(data)
+                data = data[data.index(b'\x00'):]
 
                 rtype, rclass, ttl, rdlen = struct.unpack('!HHLH', data[:10])
                 data = data[10:]
@@ -188,22 +193,25 @@ def send(pkt: Ether):
     assert isinstance(pkt, Ether), 'pkt must be of type Ethernet to be sent.'
     send_sock.send(pkt.__bytes__()[0])
 
-def is_response(res, pkt):
+def is_response(res, pkt, *, flipIP, flipMAC, flipPort):
     # Check if the layers are not the same.
     if ((IP in res) != (IP in pkt)) or ((UDP in res) != (UDP in pkt)) or ((ICMP in res) != (ICMP in pkt))\
         or ((ARP in res) != (ARP in pkt)):
         return False
 
+    if flipMAC and not (res.dst == pkt.src and res.src == pkt.dst):
+        return False
+
     if IP in pkt:
         # dst and src ip should have been switched.
-        if not (res[IP].dst_ip == pkt[IP].src_ip and res[IP].src_ip == pkt[IP].dst_ip):
+        if flipIP and not (res[IP].dst_ip == pkt[IP].src_ip and res[IP].src_ip == pkt[IP].dst_ip):
             return False
         if ICMP in res and ICMP in pkt:
             return res[ICMP].id == pkt[ICMP].id and res[ICMP].seq == pkt[ICMP].seq
 
         if UDP in pkt:
             # dport and sport should have been switched
-            if not (res[UDP].dport == pkt[UDP].sport and res[UDP].sport == pkt[UDP].dport):
+            if flipPort and not (res[UDP].dport == pkt[UDP].sport and res[UDP].sport == pkt[UDP].dport):
                 return False
             return True
     elif ARP in pkt:
@@ -211,23 +219,31 @@ def is_response(res, pkt):
         pktarp: ARP = pkt[ARP]
         return resarp.target_ip == pktarp.sender_ip and resarp.hwsize == pktarp.hwsize and resarp.opcode != pktarp.opcode
 
-def sendreceive(pkt: Ether):
+def sendreceive(pkt: Ether, flipIP=True, flipMAC=False, flipPort=True):
     send(pkt)
     while True:
         res = recv_sock.recvfrom(1500)[0]
         try:
             res = parseEther(res)
-        except (ValueError, struct.error):
+        except (ValueError, struct.error, IndexError):
             continue
         if res is None:
             continue
-        if is_response(res, pkt):
+        if is_response(res, pkt, flipIP=flipIP, flipMAC=flipMAC, flipPort=flipPort):
             return res
 
-print(parseEther(b"\x01\x00\x5e\x00\x00\xfb\x9c\xeb\xe8\xb3\xb4\x47\x08\x00\x45\x00" \
-b"\x00\x4d\x1a\x4d\x40\x00\xff\x11\xbe\xa4\xc0\xa8\x01\x0a\xe0\x00" \
-b"\x00\xfb\x14\xe9\x14\xe9\x00\x39\x8b\x33\x00\x00\x84\x00\x00\x00" \
-b"\x00\x01\x00\x00\x00\x00\x0f\x6d\x69\x6c\x69\x6e\x6b\x34\x31\x32" \
-b"\x30\x30\x37\x39\x36\x31\x05\x6c\x6f\x63\x61\x6c\x00\x00\x01\x80" \
-b"\x01\x00\x00\x00\x78\x00\x04\xc0\xa8\x01\x0a"
-))
+pkt = Ether(dst="01:00:5e:00:00:fb")/IP(dst="224.0.0.251", ttl=1)/UDP(dport=5353)/DNS(qd=DNSQR(qname="oripc.local"))
+print(sendreceive(pkt, flipIP=False))
+# x = b"\x4a\x30\x84\x00\x00\x01\x00\x01\x00\x00\x00\x04\x05\x6f\x72\x69" \
+# b"\x70\x63\x05\x6c\x6f\x63\x61\x6c\x00\x00\x01\x00\x01\x05\x4f\x52" \
+# b"\x49\x50\x43\xc0\x12\x00\x01\x00\x01\x00\x00\x00\x0a\x00\x04\xc0" \
+# b"\xa8\x01\x02\xc0\x1d\x00\x1c\x00\x01\x00\x00\x00\x0a\x00\x10\x2a" \
+# b"\x00\xa0\x40\x01\x8b\xb2\x3c\x00\x00\x00\x00\x00\x00\x10\x07\xc0" \
+# b"\x1d\x00\x1c\x00\x01\x00\x00\x00\x0a\x00\x10\x2a\x00\xa0\x40\x01" \
+# b"\x8b\xb2\x3c\x6c\x7e\x41\x27\x0c\x6f\xf6\x7a\xc0\x1d\x00\x1c\x00" \
+# b"\x01\x00\x00\x00\x0a\x00\x10\x2a\x00\xa0\x40\x01\x8b\xb2\x3c\x65" \
+# b"\xa0\x29\xab\x27\x8c\x8c\xf0\xc0\x1d\x00\x1c\x00\x01\x00\x00\x00" \
+# b"\x0a\x00\x10\xfe\x80\x00\x00\x00\x00\x00\x00\x6c\x7e\x41\x27\x0c" \
+# b"\x6f\xf6\x7a"
+#
+# print(parseDNS(x))
