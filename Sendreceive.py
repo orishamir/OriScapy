@@ -9,7 +9,8 @@ from Raw import Raw
 from Tcp import TCP
 from Udp import UDP
 from conf import iface
-from Values import ProtocolTypes, bytesToMac, bytesToIpv4
+from HelperFuncs import ProtocolTypes, bytesToMac, bytesToIpv4
+import time
 # https://stackoverflow.com/a/57133488/9100289
 
 ETH_P_ALL = 3 # not defined in socket module, sadly...
@@ -66,10 +67,11 @@ def parseIP(data, pkt):
 
         # Here comes the hard part, trying to figure out exactly what type
         # of UDP data was sent. Some possibilities are:
-        # UDP, DHCP, Literally any Streaming Services, NTP, or
+        # UDP, DHCP, Literally any Streaming Service, NTP, or
         # some random 5 year old that opened a UDP socket using Python.
 
         # This means i'll do it later and not rn :)
+        # Except DNS, which I implemented.
     else:
         pkt = parseData(data, pkt)
     return pkt
@@ -191,9 +193,11 @@ def parseDNS(data):
 
 def send(pkt: Ether):
     assert isinstance(pkt, Ether), 'pkt must be of type Ethernet to be sent.'
-    send_sock.send(pkt.__bytes__()[0])
+    bts = pkt.__bytes__()
+    assert len(bts) == 1, "Does not support sending fragmented packets as of now."
+    send_sock.send(bts[0])
 
-def is_response(res, pkt, *, flipIP, flipMAC, flipPort):
+def _is_response(res, pkt, *, flipIP, flipMAC, flipPort):
     # Check if the layers are not the same.
     if ((IP in res) != (IP in pkt)) or ((UDP in res) != (UDP in pkt)) or ((ICMP in res) != (ICMP in pkt))\
         or ((ARP in res) != (ARP in pkt)):
@@ -219,8 +223,9 @@ def is_response(res, pkt, *, flipIP, flipMAC, flipPort):
         pktarp: ARP = pkt[ARP]
         return resarp.target_ip == pktarp.sender_ip and resarp.hwsize == pktarp.hwsize and resarp.opcode != pktarp.opcode
 
-def sendreceive(pkt: Ether, flipIP=True, flipMAC=False, flipPort=True):
+def sendreceive(pkt: Ether, flipIP=True, flipMAC=False, flipPort=True, timeout=None):
     send(pkt)
+    st = time.time()
     while True:
         res = recv_sock.recvfrom(1500)[0]
         try:
@@ -229,21 +234,11 @@ def sendreceive(pkt: Ether, flipIP=True, flipMAC=False, flipPort=True):
             continue
         if res is None:
             continue
-        if is_response(res, pkt, flipIP=flipIP, flipMAC=flipMAC, flipPort=flipPort):
+        if _is_response(res, pkt, flipIP=flipIP, flipMAC=flipMAC, flipPort=flipPort):
             return res
+        if timeout and time.time()-st > timeout:
+            raise TimeoutError("sendreceive() timed out.")
 
-pkt = Ether(dst="01:00:5e:00:00:fb")/IP(dst="224.0.0.251", ttl=1)/UDP(dport=5353)/DNS(qd=DNSQR(qname="oripc.local"))
-print(sendreceive(pkt, flipIP=False))
-# x = b"\x4a\x30\x84\x00\x00\x01\x00\x01\x00\x00\x00\x04\x05\x6f\x72\x69" \
-# b"\x70\x63\x05\x6c\x6f\x63\x61\x6c\x00\x00\x01\x00\x01\x05\x4f\x52" \
-# b"\x49\x50\x43\xc0\x12\x00\x01\x00\x01\x00\x00\x00\x0a\x00\x04\xc0" \
-# b"\xa8\x01\x02\xc0\x1d\x00\x1c\x00\x01\x00\x00\x00\x0a\x00\x10\x2a" \
-# b"\x00\xa0\x40\x01\x8b\xb2\x3c\x00\x00\x00\x00\x00\x00\x10\x07\xc0" \
-# b"\x1d\x00\x1c\x00\x01\x00\x00\x00\x0a\x00\x10\x2a\x00\xa0\x40\x01" \
-# b"\x8b\xb2\x3c\x6c\x7e\x41\x27\x0c\x6f\xf6\x7a\xc0\x1d\x00\x1c\x00" \
-# b"\x01\x00\x00\x00\x0a\x00\x10\x2a\x00\xa0\x40\x01\x8b\xb2\x3c\x65" \
-# b"\xa0\x29\xab\x27\x8c\x8c\xf0\xc0\x1d\x00\x1c\x00\x01\x00\x00\x00" \
-# b"\x0a\x00\x10\xfe\x80\x00\x00\x00\x00\x00\x00\x6c\x7e\x41\x27\x0c" \
-# b"\x6f\xf6\x7a"
-#
-# print(parseDNS(x))
+if __name__ == "__main__":
+    pkt = Ether(dst="01:00:5e:00:00:fb")/IP(dst="224.0.0.251", ttl=1)/UDP(dport=5353)/DNS(qd=DNSQR(qname="classroom70.local"))
+    print(sendreceive(pkt, flipIP=False))

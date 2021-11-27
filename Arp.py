@@ -1,6 +1,6 @@
 import conf
 from Layer import Layer
-from Values import Bidict, mac2bytes, ipv4ToBytes, ProtocolTypes, \
+from HelperFuncs import Bidict, mac2bytes, ipv4ToBytes, ProtocolTypes, \
     ProtocolTypes_dict, AddressesType, getMacAddr, getIpAddr
 import struct
 

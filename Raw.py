@@ -3,7 +3,6 @@ from Layer import Layer
 
 
 class Raw(Layer):
-
     load = None
 
     def __init__(self, load=None):

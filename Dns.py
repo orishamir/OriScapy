@@ -1,7 +1,7 @@
 import struct
 
 from Layer import Layer
-from Values import RandShort, ipv4ToBytes, isIpv4, Bidict
+from HelperFuncs import RandShort, ipv4ToBytes, isIpv4, Bidict
 
 
 # noinspection SpellCheckingInspection

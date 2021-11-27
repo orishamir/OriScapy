@@ -1,8 +1,8 @@
 import struct
 # https://datatracker.ietf.org/doc/html/rfc792
 from Layer import Layer
-from Values import *
-from Values import RandShort
+from HelperFuncs import *
+from HelperFuncs import RandShort
 
 # noinspection SpellCheckingInspection
 class ICMP(Layer):

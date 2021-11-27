@@ -2,7 +2,7 @@ from Layer import Layer
 import struct
 
 # https://datatracker.ietf.org/doc/html/rfc793#section-3.1
-from Values import RandShort, checksum
+from HelperFuncs import RandShort, checksum
 
 class TCP(Layer):
     sport     = None

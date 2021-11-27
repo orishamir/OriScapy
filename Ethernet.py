@@ -1,8 +1,10 @@
 from Layer import Layer
-from Values import *
+from HelperFuncs import *
 from Arp import ARP
 from Ip import IP
 from zlib import crc32
+
+import Sendreceive
 from conf import iface
 import struct
 
@@ -90,8 +92,18 @@ class Ether(Layer):
             self.etherType = ProtocolTypes.IPv4
             if self.dst is None:
                 # resolve ip to mac automatically
-                # send arp and receive automctically.
-                pass
+                # send arp and receive automatically.
+                dst_ip = self[IP].dst_ip
+                if IP in self:
+                    # If same subnet, use the direct PC's mac
+                    if isSameSubnet(dst_ip, getIpAddr(iface), getSubnetmask(iface)):
+                        _resolve = Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(dst_ip=dst_ip)
+                        self.dst = Sendreceive.sendreceive(_resolve)[ARP].sender_mac
+                    else:
+                        # else send to router
+                        _resolve = Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(dst_ip=getDefaultGateway(iface))
+                        self.dst = Sendreceive.sendreceive(_resolve)[ARP].sender_mac
+
 
     def __str__(self):
         self.etherType = ProtocolTypes_dict[self.etherType]

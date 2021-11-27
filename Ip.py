@@ -1,7 +1,9 @@
+import socket
+
 from Layer import Layer
 from Tcp import TCP
 from Udp import UDP
-from Values import *
+from HelperFuncs import *
 from Icmp import ICMP
 from conf import iface
 import struct
@@ -47,16 +49,32 @@ class IP(Layer):
         self.protocol       =  protocol
         self.id             =  id
 
+        if not isIpv4(self.dst_ip):
+            self.dst_ip = socket.gethostbyname(self.dst_ip)
+
     def __bytes__(self):
         self._autocomplete()
+
         src_ip = ipv4ToBytes(self.src_ip)
         dst_ip = ipv4ToBytes(self.dst_ip)
         # fucking version and IHL are 4 bits each
         first2Bytes = struct.pack("B", (self.version << 4) | self.IHL)
         first2Bytes += struct.pack("B", (self.DSCP << 2)  | self.ECN)
 
-        # IP fragmentation... very fun
+        if not hasattr(self, 'data'):
+            print("Warning: No data inside IP packet.")
+            tmp_pkt = first2Bytes
+            tmp_pkt += struct.pack("!H", self.IHL * 4)
+            tmp_pkt += struct.pack("!H", self.id)
+            tmp_pkt += struct.pack("!H", 0)
+            tmp_pkt += struct.pack("!B", self.ttl)
+            tmp_pkt += struct.pack("!B", self.protocol)
+            tmp_pkt += struct.pack("!H", checksum(tmp_pkt + src_ip + dst_ip))
+            tmp_pkt += src_ip
+            tmp_pkt += dst_ip
+            return tmp_pkt
 
+        # IP fragmentation... very fun
         all_bytes = bytes(self.data)
         frags_bytes = []
 

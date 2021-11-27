@@ -1,7 +1,7 @@
 import struct
 
 from Layer import Layer
-from Values import RandShort
+from HelperFuncs import RandShort
 
 # noinspection SpellCheckingInspection
 # https://en.wikipedia.org/wiki/User_Datagram_Protocol#UDP_datagram_structure
