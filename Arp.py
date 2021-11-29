@@ -11,7 +11,7 @@ import struct
 
 # ARP parameters:
 # https://www.iana.org/assignments/arp-parameters/arp-parameters.xhtml
-# protocol types: https://en.wikipedia.org/wiki/EtherType#Values
+
 
 # ptype: ipv4
 # hwtype: ethernet

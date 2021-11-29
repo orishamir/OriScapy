@@ -93,8 +93,8 @@ class Ether(Layer):
             if self.dst is None:
                 # resolve ip to mac automatically
                 # send arp and receive automatically.
-                dst_ip = self[IP].dst_ip
                 if IP in self:
+                    dst_ip = self[IP].dst_ip
                     # If same subnet, use the direct PC's mac
                     if isSameSubnet(dst_ip, getIpAddr(iface), getSubnetmask(iface)):
                         _resolve = Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(dst_ip=dst_ip)
@@ -102,8 +102,7 @@ class Ether(Layer):
                     else:
                         # else send to router
                         _resolve = Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(dst_ip=getDefaultGateway(iface))
-                        self.dst = Sendreceive.sendreceive(_resolve)[ARP].sender_mac
-
+                        self.dst = Sendreceive.sendreceive(_resolve, timeout=10)[ARP].sender_mac
 
     def __str__(self):
         self.etherType = ProtocolTypes_dict[self.etherType]

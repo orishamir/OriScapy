@@ -3,6 +3,7 @@ from Arp import ARP
 from Dns import DNS, DNSQR, DNSRR
 from Ethernet import Ether
 from Ip import IP
+from Raw import Raw
 from Udp import UDP
 from Tcp import TCP
 from Icmp import ICMP
@@ -17,9 +18,9 @@ def resolve_mac(ip):
     return Sendreceive.sendreceive(pkt)[ARP].sender_mac
 
 if __name__ == '__main__':
-    pkt = Ether()/IP(dst="google.com")#/ICMP()
+    pkt = Ether()/IP(dst="8.8.8.8")/UDP(dport=53)/DNS(qd=DNSQR(qname="google.com"))
     #print(Sendreceive.sendreceive(pkt))
     #pkt = Ether()/IP(dst="192.168.1.2")/UDP(dport=53)
-    print(pkt.__bytes__())
+    #print(pkt.__bytes__())
     print(Sendreceive.sendreceive(pkt))
-
+    print(pkt.dst_ip)

@@ -192,7 +192,7 @@ def parseDNS(data):
     return pkt
 
 def send(pkt: Ether):
-    assert isinstance(pkt, Ether), 'pkt must be of type Ethernet to be sent.'
+    assert isinstance(pkt, Ether | bytes), 'pkt must be of type Ethernet or Bytes to be sent.'
     bts = pkt.__bytes__()
     assert len(bts) == 1, "Does not support sending fragmented packets as of now."
     send_sock.send(bts[0])
@@ -237,8 +237,8 @@ def sendreceive(pkt: Ether, flipIP=True, flipMAC=False, flipPort=True, timeout=N
         if _is_response(res, pkt, flipIP=flipIP, flipMAC=flipMAC, flipPort=flipPort):
             return res
         if timeout and time.time()-st > timeout:
-            raise TimeoutError("sendreceive() timed out.")
+            raise TimeoutError("sendreceive() timed out when sending packet", pkt, '\nHas timed out')
 
 if __name__ == "__main__":
-    pkt = Ether(dst="01:00:5e:00:00:fb")/IP(dst="224.0.0.251", ttl=1)/UDP(dport=5353)/DNS(qd=DNSQR(qname="classroom70.local"))
+    pkt = Ether(dst="01:00:5e:00:00:fb")/IP(dst="224.0.0.251", ttl=1)/UDP(dport=5353)/DNS(qd=DNSQR(qname="ORIPC.local"))
     print(sendreceive(pkt, flipIP=False))

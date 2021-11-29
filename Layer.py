@@ -60,6 +60,30 @@ class Layer:
             return self
         return self.data[item]
 
+    def __getattr__(self, name):
+        """
+        Custom functionality of pkt.attr, so for example
+        IP attributes are accessible from Ether layer forward
+        :param name: str
+        :return:
+        """
+        if name in self.__dict__:
+            return self.__dict__[name]
+        if 'data' not in self.__dict__:
+            raise AttributeError(f"No attribute {name}")
+        return getattr(self.data, name)
+
+    # def __setattr__(self, key, value):
+    #     if hasattr(self, key):
+    #         self.__dict__[key] = value
+    #     if "data" not in self.__dict__:
+    #         self.__dict__[key] = value
+    #         return
+    #     setattr(self.__dict__['data'], key, value)
+    #     if not hasattr(self, key):
+    #         self.__dict__[key] = value
+
+
     def _autocomplete(self):
         pass
 
