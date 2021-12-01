@@ -20,7 +20,7 @@ class IP(Layer):
         ICMP      = 0x1
         TCP       = 0x6
         UDP       = 0x11
-        IPV6      = 0x29
+        IPv6      = 0x29
 
     ProtocolTypesIP_dict = Bidict(vars(ProtocolTypesIP))
 
@@ -28,12 +28,12 @@ class IP(Layer):
         DF = 0b0
 
     version          =  4            # IPv4
-    IHL              =  None         # How long the IP packet is (in 4 bytes, 5 means 20 bytes long and is the min)
+    IHL              =  None         # How long the IP header is (in 4 bytes, 5 means 20 bytes long and is the min)
     DSCP             =  0            # I dont fucking know
     ECN              =  0            # I dont fucking know
     total_length     =  None         # The total length header+data
     id               =  None         # The ID, just make it random lmfao (fragmentation soon...)
-    flags            =  None
+    flags            =  None         # dont fragment and more fragments and such
     frag_off         =  0            # This is for IP fragmentation, lets not worry about it rn lmao
     ttl              =  64           # everyone knows what time to live is stfu
     protocol         =  None         # Protocols include TCP (0x6), ICMP (0x1) and such.

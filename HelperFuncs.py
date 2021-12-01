@@ -102,11 +102,6 @@ class ProtocolTypes:
 
 class AddressesType:
     _ipv6_broadcast = ""  # does not exist lol
-    @property
-    def ipv6_broadcast(self):
-        print("Warning: idk what you're doing but ipv6 broadcast does not exist lmao, it uses multicast")
-        return self._ipv6_broadcast
-
     mac_broadcast = "ff:ff:ff:ff:ff:ff"
     ipv4_broadcast = "255.255.255.255"
 

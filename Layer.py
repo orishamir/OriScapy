@@ -73,17 +73,6 @@ class Layer:
             raise AttributeError(f"No attribute {name}")
         return getattr(self.data, name)
 
-    # def __setattr__(self, key, value):
-    #     if hasattr(self, key):
-    #         self.__dict__[key] = value
-    #     if "data" not in self.__dict__:
-    #         self.__dict__[key] = value
-    #         return
-    #     setattr(self.__dict__['data'], key, value)
-    #     if not hasattr(self, key):
-    #         self.__dict__[key] = value
-
-
     def _autocomplete(self):
         pass
 
