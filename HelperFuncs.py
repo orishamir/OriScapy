@@ -90,6 +90,13 @@ def getDefaultGateway(iface):
 def isSameSubnet(tstIp, ip, subnet):
     return int(addr2concatbits(tstIp), 2) & subnet == int(addr2concatbits(ip), 2) & subnet
 
+def isBroadCastAddr(tstIp, mask: int):
+    mask = bin(mask)[2:]
+    mask = mask.replace('0', 'a').replace('1', '0').replace('a', '1')
+    mask = int(mask, 2)
+    host_part = bin(int(addr2concatbits(tstIp), 2) & mask)[2:]
+    return len(host_part) == host_part.count('1')
+
 def RandShort():
     return _random.randint(2000, 2**16-100)
 
@@ -105,7 +112,6 @@ class AddressesType:
     mac_broadcast = "ff:ff:ff:ff:ff:ff"
     ipv4_broadcast = "255.255.255.255"
 
-
     ipv4_empty = "0.0.0.0"
     ipv6_empty = "::"
 
@@ -116,10 +122,14 @@ class AddressesType:
 class Bidict(dict):
     def __init__(self, *args, **kwargs):
         super(Bidict, self).__init__(*args, **kwargs)
+
+        # should not be here since its not general to bi-dicts
         for key in self.copy().keys():
             if key.startswith("_"):
                 del self[key]
+
         self.inverse = {}
+        # make this a 1-liner?
         for key, val in self.items():
             self.inverse[val] = key
 

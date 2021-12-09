@@ -207,8 +207,14 @@ def _is_response(res, pkt, *, flipIP, flipMAC, flipPort):
         return False
 
     if IP in pkt:
+        pktIP: IP = pkt[IP]
+        resIP: IP = res[IP]
+
+        # not the same packet plz
+        if pktIP.dst_ip == resIP.dst_ip and pktIP.src_ip == resIP.src_ip:
+            return False
         # dst and src ip should have been switched.
-        if flipIP and not (res[IP].dst_ip == pkt[IP].src_ip and res[IP].src_ip == pkt[IP].dst_ip):
+        if flipIP and not (resIP.dst_ip == pktIP.src_ip and resIP.src_ip == pktIP.dst_ip):
             return False
         if ICMP in res and ICMP in pkt:
             return res[ICMP].id == pkt[ICMP].id and res[ICMP].seq == pkt[ICMP].seq
@@ -221,7 +227,7 @@ def _is_response(res, pkt, *, flipIP, flipMAC, flipPort):
     elif ARP in pkt:
         resarp: ARP = res[ARP]
         pktarp: ARP = pkt[ARP]
-        return resarp.target_ip == pktarp.sender_ip and resarp.hwsize == pktarp.hwsize and resarp.opcode != pktarp.opcode
+        return resarp.target_ip == pktarp.sender_ip and resarp.opcode != pktarp.opcode
 
 def sendreceive(pkt: Ether, flipIP=True, flipMAC=False, flipPort=True, timeout=None):
     send(pkt)

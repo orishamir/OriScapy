@@ -96,7 +96,10 @@ class Ether(Layer):
                 if IP in self:
                     dst_ip = self[IP].dst_ip
                     # If same subnet, use the direct PC's mac
-                    if isSameSubnet(dst_ip, getIpAddr(iface), getSubnetmask(iface)):
+                    mask = getSubnetmask(iface)
+                    if isBroadCastAddr(dst_ip, mask):
+                        self.dst = "ff:ff:ff:ff:ff:ff"
+                    elif isSameSubnet(dst_ip, getIpAddr(iface), mask):
                         _resolve = Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(dst_ip=dst_ip)
                         self.dst = Sendreceive.sendreceive(_resolve)[ARP].sender_mac
                     else:
