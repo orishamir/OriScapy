@@ -29,10 +29,10 @@ class IP(Layer):
 
     version          =  4            # IPv4
     IHL              =  None         # How long the IP header is (in 4 bytes, 5 means 20 bytes long and is the min)
-    DSCP             =  0            # I dont fucking know
-    ECN              =  0            # I dont fucking know
+    DSCP             =  0            # Something to do with Quality-Of-Service, Differentiated Services
+    ECN              =  0            # Something to do with Quality-Of-Service, Differentiated Services
     total_length     =  None         # The total length header+data
-    id               =  None         # The ID, just make it random lmfao (fragmentation soon...)
+    id               =  None         # The ID, just make it random (mostly I guess for fragmentation)
     flags            =  None         # dont fragment and more fragments and such
     frag_off         =  0            # This is for IP fragmentation, lets not worry about it rn lmao
     ttl              =  64           # everyone knows what time to live is stfu
