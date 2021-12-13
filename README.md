@@ -1,4 +1,5 @@
 
+
 # OriScapy
 This is a custom-made version of the well known [Scapy library for python](https://scapy.net/).
 
@@ -50,8 +51,8 @@ ip = "192.168.1.2"
 
 # Resolve 192.168.1.2's MAC Address
 pkt = Ether() / ARP(pdst=ip)  # Everything is auto-completed :)
-res = sendreceive(pkt)
-print(f"{ip}'s MAC address is {res.hwsrc}")
+ans = sendreceive(pkt)
+print(f"{ip}'s MAC address is {ans.hwsrc}")
 ```
 #### DNS Queries
 (No support for Additional and Authorative RRs)
@@ -60,10 +61,29 @@ from All import *
   
 # Resolve google.com by querying google's DNS server (8.8.8.8)  
 pkt = Ether()/IP(dst="8.8.8.8")/UDP(dport=53)/DNS(qd=DNSQR(qname="google.com"))  
-res = sendreceive(pkt, timeout=3)
+ans = sendreceive(pkt, timeout=3)
 
-for answer_record in res.an:
+for answer_record in ans.an:
 	print(answer_record.rdata)
+```
+
+#### Resolve Hostname in LAN
+```python
+from All import *  
+  
+# To query the local LAN for the IP of hostname "myHostname"  
+# a DNS Query is sent to multicast ip "224.0.0.251", also known as  
+# multicast-DNS (mDNS). Inside the query, the qname should be "hostname"+".local"  
+  
+pkt = Ether(dst="ff:ff:ff:ff:ff:ff")/IP(dst="224.0.0.251")/UDP(dport=5353)/DNS(qd=DNSQR(qname="myHostname.local"))  
+  
+# IP may come back either to the multicast address, or directly to the host PC's IP.
+# Which means that you can't tell whether a packet is an answer to `pkt` based on
+# the dst and src IP inside it, so we set flipIP to False
+ans = sendreceive(pkt, flipIP=False)  
+  
+for answer_record in ans.an:  
+  print(answer_record.rdata)
 ```
 
 #### Ping an IP
