@@ -1,3 +1,4 @@
+
 # OriScapy
 This is a custom-made version of the well known [Scapy library for python](https://scapy.net/).
 
@@ -30,15 +31,64 @@ All those fields are automatically completed by Scapy for your own comfort,
 Scapy automatically detects the type of packet to be sent is ARP,  
 And so it sets the `type` field to `0x806 (ARP)`, like it should be.   
 Also, the `Source MAC` and the `Destination MAC` are automatically detected and filled.
-   
-      
 
 And so I wanted for my knowledge about Networking, to learn more about  
 the most famous packets' header format.   
 And to do that I thought to make my own Scapy which would support    
-Ethernet, ARP, IP, ICMP (ping), UDP, DNS and maybe more in the future.
+Ethernet, ARP, IP, ICMP, UDP, DNS and maybe more in the future.
 
 ## Usage
 First of all, don't. Please just use [Scapy](https://pypi.org/project/scapy/).   
-But if you insist, then its basically the same as Scapy. (more info TBC)
+But if you insist, then its basically the same as Scapy. Here are some examples:    
 
+#### ARP Queries
+```python
+from All import *
+
+ip = "192.168.1.2"
+# Resolve 192.168.1.2's MAC Address
+pkt = Ether()/ARP(pdst=ip)  # Everything is auto-completed :)
+res = sendreceive(pkt)
+print(f"{ip}'s MAC address is {res.sender_mac}")
+```
+#### DNS Queries
+(No support for Additional and Authorative RRs)
+```python
+from All import *  
+  
+# Resolve google.com by quering google's DNS server (8.8.8.8)  
+pkt = Ether()/IP(dst="8.8.8.8")/UDP(dport=53)/DNS(qd=DNSQR(qname="google.com"))  
+res = sendreceive(pkt, timeout=3)
+
+for answer_record in res.an:
+	print(answer_record.rdata)
+```
+
+#### Ping an IP
+```python
+from All import *
+
+# Ping google's DNS server
+pkt = Ether()/IP(dst="8.8.8.8")/ICMP()
+res = sendreceive(pkt, timeout=2)
+print(res)
+```
+
+#### ARP Spoofing/Cache Poisoning
+```python
+from All import *
+# Example TBC
+```
+
+#### DNS Amplification
+```python
+from All import *
+# Example TBC
+```
+    
+
+#### DNS Cache Poisoning
+```python
+from All import *
+# Example TBC
+```
