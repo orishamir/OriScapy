@@ -42,16 +42,16 @@ class ARP(Layer):
     target_ip    =  None
 
     def __init__(self, hwtype=HardwareTypes.Ethernet, ptype=ProtocolTypes.IPv4, opcode=Opcodes.Request,
-                 dst_ip=None, dst_mac=None, src_ip=None, src_mac=None, psize=4, hwsize=6):
+                 pdst=None, hwdst=None, psrc=None, hwsrc=None, psize=4, hwsize=6):
         self.hardwareType =  hwtype
         self.protocolType =  ptype
         self.hwsize       =  hwsize
         self.protocolSize =  psize
         self.opcode       =  opcode
-        self.target_ip    =  dst_ip
-        self.target_mac   =  dst_mac
-        self.sender_ip    =  src_ip
-        self.sender_mac   =  src_mac
+        self.target_ip    =  pdst
+        self.target_mac   =  hwdst
+        self.sender_ip    =  psrc
+        self.sender_mac   =  hwsrc
 
     def __bytes__(self):
         self._autocomplete()

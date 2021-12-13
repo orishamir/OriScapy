@@ -98,7 +98,7 @@ def parseEther(data):
 
         # print(hex(hwtype), hex(ptype), hex(hwlen), hex(plen), hex(op), hwsrc, psrc, hwdst, pdst)
         # print(dst, src, hex(type))
-        return pkt/ARP(hwtype=hwtype, ptype=ptype, opcode=op, dst_ip=pdst, dst_mac=hwdst, src_ip=psrc, src_mac=hwsrc,psize=plen, hwsize=hwlen)
+        return pkt/ARP(hwtype=hwtype, ptype=ptype, opcode=op, pdst=pdst, hwdst=hwdst, psrc=psrc, hwsrc=hwsrc, psize=plen, hwsize=hwlen)
     elif type == ProtocolTypes.IPv4:
         # print("An IP packet")
         pkt = parseIP(data, pkt)
