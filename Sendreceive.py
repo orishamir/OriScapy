@@ -182,7 +182,7 @@ def parseDNS(data):
                     # rdata = bytesToIpv6()
                     pass
                 data = data[rdlen:]
-                an.append(DNSRR(name=rname, type=rtype, class_=rclass & 0b011111111111111, ttl=ttl, rdata=rdata))
+                an.append(DNSRR(name=rname, type=rtype, rclass=rclass & 0b011111111111111, ttl=ttl, rdata=rdata))
 
     pkt = DNS(rd=RD, ra=RA, id=id, rcode=rcode, opcode=opcode, qr=QR,
                qdcount=qdcount, ancount=ancount, nscount=nscount, arcount=arcount,
@@ -211,10 +211,10 @@ def _is_response(res, pkt, *, flipIP, flipMAC, flipPort):
         resIP: IP = res[IP]
 
         # not the same packet plz
-        if pktIP.dst_ip == resIP.dst_ip and pktIP.src_ip == resIP.src_ip:
+        if pktIP.pdst == resIP.pdst and pktIP.psrc == resIP.psrc:
             return False
         # dst and src ip should have been switched.
-        if flipIP and not (resIP.dst_ip == pktIP.src_ip and resIP.src_ip == pktIP.dst_ip):
+        if flipIP and not (resIP.pdst == pktIP.psrc and resIP.psrc == pktIP.pdst):
             return False
         if ICMP in res and ICMP in pkt:
             return res[ICMP].id == pkt[ICMP].id and res[ICMP].seq == pkt[ICMP].seq
@@ -227,7 +227,7 @@ def _is_response(res, pkt, *, flipIP, flipMAC, flipPort):
     elif ARP in pkt:
         resarp: ARP = res[ARP]
         pktarp: ARP = pkt[ARP]
-        return resarp.target_ip == pktarp.sender_ip and resarp.opcode != pktarp.opcode
+        return resarp.pdst == pktarp.psrc and resarp.opcode != pktarp.opcode
 
 def sendreceive(pkt: Ether, flipIP=True, flipMAC=False, flipPort=True, timeout=None):
     send(pkt)

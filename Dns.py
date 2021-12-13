@@ -64,15 +64,15 @@ class DNSQR(Layer):
 class DNSRR(Layer):
     name       = None
     type       = None
-    class_     = None
+    rclass     = None
     ttl        = None
     rdlength   = None
     rdata      = None
 
-    def __init__(self, name=None, type=None, class_=None, ttl=None, rdata=None):
+    def __init__(self, name=None, type=None, rclass=None, ttl=None, rdata=None):
         self.name   = name
         self.type   = type
-        self.class_ = class_
+        self.rclass = rclass
         self.ttl    = ttl
         self.rdata  = rdata
 
@@ -93,7 +93,7 @@ class DNSRR(Layer):
         name += b'\x00'
 
         pkt = name
-        pkt += struct.pack("!HHLH", self.type, self.class_, self.ttl, len(self.rdata))
+        pkt += struct.pack("!HHLH", self.type, self.rclass, self.ttl, len(self.rdata))
         pkt += self.rdata
 
         return pkt
@@ -103,8 +103,8 @@ class DNSRR(Layer):
             self.ttl = 0x0  # means don't cache.
         if self.type is None:
             self.type = QTYPES.A
-        if self.class_ is None:
-            self.class_ = 0x1
+        if self.rclass is None:
+            self.rclass = 0x1
 
         if not isinstance(self.rdata, bytes) and isIpv4(self.rdata):
             self.rdata = ipv4ToBytes(self.rdata)

@@ -38,25 +38,25 @@ class IP(Layer):
     ttl              =  64           # everyone knows what time to live is stfu
     protocol         =  None         # Protocols include TCP (0x6), ICMP (0x1) and such.
     chksum           =  0            # stfu
-    src_ip           =  None         # ...
-    dst_ip           =  None         # ...
+    psrc           =  None         # ...
+    pdst           =  None         # ...
     options          =  None         # stfu
 
     def __init__(self, *, src=None, dst=None, ttl=64, protocol=ProtocolTypesIP.ICMP, id=None):
-        self.src_ip         =  src
-        self.dst_ip         =  dst
+        self.psrc         =  src
+        self.pdst         =  dst
         self.ttl            =  ttl
         self.protocol       =  protocol
         self.id             =  id
 
-        if not isIpv4(self.dst_ip):
-            self.dst_ip = socket.gethostbyname(self.dst_ip)
+        if not isIpv4(self.pdst):
+            self.pdst = socket.gethostbyname(self.pdst)
 
     def __bytes__(self):
         self._autocomplete()
 
-        src_ip = ipv4ToBytes(self.src_ip)
-        dst_ip = ipv4ToBytes(self.dst_ip)
+        src_ip = ipv4ToBytes(self.psrc)
+        dst_ip = ipv4ToBytes(self.pdst)
         # fucking version and IHL are 4 bits each
         first2Bytes = struct.pack("B", (self.version << 4) | self.IHL)
         first2Bytes += struct.pack("B", (self.DSCP << 2)  | self.ECN)
@@ -111,8 +111,8 @@ class IP(Layer):
         if self.id is None:
             self.id = RandShort()
 
-        if self.src_ip is None:
-            self.src_ip = getIpAddr(iface)
+        if self.psrc is None:
+            self.psrc = getIpAddr(iface)
 
         if not hasattr(self, 'data'):
             self.protocol = self.ProtocolTypesIP.ICMP
@@ -123,9 +123,9 @@ class IP(Layer):
         elif isinstance(self.data, UDP):
             self.protocol = self.ProtocolTypesIP.UDP
 
-        if self.dst_ip is None:
+        if self.pdst is None:
             print("Warning: Destination IP is automatically set to broadcast.")
-            self.dst_ip = AddressesType.ipv4_broadcast
+            self.pdst = AddressesType.ipv4_broadcast
 
         self.chksum = 0
 

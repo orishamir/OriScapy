@@ -42,14 +42,15 @@ First of all, don't. Please just use [Scapy](https://pypi.org/project/scapy/).
 But if you insist, then its basically the same as Scapy. Here are some examples:    
 
 #### ARP Queries
+
 ```python
 from All import *
 
 ip = "192.168.1.2"
 # Resolve 192.168.1.2's MAC Address
-pkt = Ether()/ARP(pdst=ip)  # Everything is auto-completed :)
+pkt = Ether() / ARP(pdst=ip)  # Everything is auto-completed :)
 res = sendreceive(pkt)
-print(f"{ip}'s MAC address is {res.sender_mac}")
+print(f"{ip}'s MAC address is {res.hwsrc}")
 ```
 #### DNS Queries
 (No support for Additional and Authorative RRs)

@@ -31,58 +31,57 @@ class ARP(Layer):
 
     HardwareTypes_dict = Bidict(vars(HardwareTypes))
 
-    hardwareType =  HardwareTypes.Ethernet
-    protocolType =  ProtocolTypes.IPv4
+    hwtype =  HardwareTypes.Ethernet
+    ptype =  ProtocolTypes.IPv4
     hardwareSize =  6
-    protocolSize =  4
+    psize =  4
     opcode       =  Opcodes.Request
-    sender_mac   =  None
-    sender_ip    =  None
-    target_mac   =  None
-    target_ip    =  None
+    hwsrc   =  None
+    psrc    =  None
+    hwdst   =  None
+    pdst    =  None
 
     def __init__(self, hwtype=HardwareTypes.Ethernet, ptype=ProtocolTypes.IPv4, opcode=Opcodes.Request,
                  pdst=None, hwdst=None, psrc=None, hwsrc=None, psize=4, hwsize=6):
-        self.hardwareType =  hwtype
-        self.protocolType =  ptype
-        self.hwsize       =  hwsize
-        self.protocolSize =  psize
-        self.opcode       =  opcode
-        self.target_ip    =  pdst
-        self.target_mac   =  hwdst
-        self.sender_ip    =  psrc
-        self.sender_mac   =  hwsrc
+        self.hwtype  =  hwtype
+        self.ptype   =  ptype
+        self.hwsize  =  hwsize
+        self.psize   =  psize
+        self.opcode  =  opcode
+        self.pdst    =  pdst
+        self.hwdst   =  hwdst
+        self.psrc    =  psrc
+        self.hwsrc   =  hwsrc
 
     def __bytes__(self):
         self._autocomplete()
         # convert to bytes
-        ret = struct.pack("!HHBBH", self.hardwareType, self.protocolType, self.hardwareSize, self.protocolSize, self.opcode)
-        ret += mac2bytes(self.sender_mac)
-        ret += ipv4ToBytes(self.sender_ip)
+        ret = struct.pack("!HHBBH", self.hwtype, self.ptype, self.hardwareSize, self.psize, self.opcode)
+        ret += mac2bytes(self.hwsrc)
+        ret += ipv4ToBytes(self.psrc)
 
-        ret += mac2bytes(self.target_mac)
-        ret += ipv4ToBytes(self.target_ip)
+        ret += mac2bytes(self.hwdst)
+        ret += ipv4ToBytes(self.pdst)
         return ret
 
     def _autocomplete(self):
         # Some parameters missing, complete automatically
 
-        # autocomplete dst_mac
-        if self.target_mac is None:
-            self.target_mac = AddressesType.mac_broadcast
+        if self.hwdst is None:
+            self.hwdst = AddressesType.mac_broadcast
 
-        if self.sender_mac is None:
-            self.sender_mac = getMacAddr(conf.iface)
+        if self.hwsrc is None:
+            self.hwsrc = getMacAddr(conf.iface)
 
-        if self.sender_ip is None:
-            self.sender_ip = getIpAddr(conf.iface)
+        if self.psrc is None:
+            self.psrc = getIpAddr(conf.iface)
 
     def __str__(self):
         self.opcode = self.OPCODES_DICT[self.opcode]
-        self.hardwareType = self.HardwareTypes_dict[self.hardwareType]
-        self.protocolType = ProtocolTypes_dict[self.protocolType]
+        self.hwtype = self.HardwareTypes_dict[self.hwtype]
+        self.ptype = ProtocolTypes_dict[self.ptype]
         ret = super(ARP, self).__str__()
         self.opcode = self.OPCODES_DICT[self.opcode]
-        self.hardwareType = self.HardwareTypes_dict[self.hardwareType]
-        self.protocolType = ProtocolTypes_dict[self.protocolType]
+        self.hwtype = self.HardwareTypes_dict[self.hwtype]
+        self.ptype = ProtocolTypes_dict[self.ptype]
         return ret
