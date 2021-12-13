@@ -27,7 +27,7 @@ although the Ethernet header obviously contains some info:
 dst, src, type
 ```
 
-All those fields are automatically completed by Scapy for your own comfort,   
+All those fields are automatically completed by Scapy for your own comfort.   
 Scapy automatically detects the type of packet to be sent is ARP,  
 And so it sets the `type` field to `0x806 (ARP)`, like it should be.   
 Also, the `Source MAC` and the `Destination MAC` are automatically detected and filled.
