@@ -1,13 +1,4 @@
-from Sendreceive import sendreceive
-from Ethernet import Ether
-from Arp import ARP
-from Ip import IP
-from Icmp import ICMP
-import HelperFuncs
-from Dns import DNS, DNSQR, DNSRR
-from Raw import Raw
-from Udp import UDP
-from Tcp import TCP
+from All import *
 
 # https://en.wikipedia.org/wiki/List_of_RFCs
 
