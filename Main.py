@@ -1,6 +1,6 @@
 from All import *
 
-# Resolve google.com by quering google's DNS server (8.8.8.8)
+# Resolve google.com by querying google's DNS server (8.8.8.8)
 pkt = Ether()/IP(dst="8.8.8.8")/UDP(dport=53)/DNS(qd=DNSQR(qname="google.com"))
 res = sendreceive(pkt)
 

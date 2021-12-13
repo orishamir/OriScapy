@@ -47,6 +47,7 @@ But if you insist, then its basically the same as Scapy. Here are some examples:
 from All import *
 
 ip = "192.168.1.2"
+
 # Resolve 192.168.1.2's MAC Address
 pkt = Ether() / ARP(pdst=ip)  # Everything is auto-completed :)
 res = sendreceive(pkt)
@@ -57,7 +58,7 @@ print(f"{ip}'s MAC address is {res.hwsrc}")
 ```python
 from All import *  
   
-# Resolve google.com by quering google's DNS server (8.8.8.8)  
+# Resolve google.com by querying google's DNS server (8.8.8.8)  
 pkt = Ether()/IP(dst="8.8.8.8")/UDP(dport=53)/DNS(qd=DNSQR(qname="google.com"))  
 res = sendreceive(pkt, timeout=3)
 
