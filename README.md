@@ -72,7 +72,7 @@ for answer_record in ans.an:
 from All import *  
   
 # To query the local LAN for the IP of hostname "myHostname"  
-# a DNS Query is sent to multicast ip "224.0.0.251", also known as  
+# a DNS Query is sent to multicast ip "224.0.0.251" and port 5353, also known as  
 # multicast-DNS (mDNS). Inside the query, the qname should be "hostname"+".local"  
   
 pkt = Ether(dst="ff:ff:ff:ff:ff:ff")/IP(dst="224.0.0.251")/UDP(dport=5353)/DNS(qd=DNSQR(qname="myHostname.local"))  
