@@ -1,24 +1,24 @@
 import socket
 import struct
-from Arp import ARP
+from HelperFuncs import ProtocolTypes, bytesToMac, bytesToIpv4
 from Dns import DNS, DNSQR, DNSRR, QTYPES
 from Ethernet import Ether
 from Icmp import ICMP
-from Ip import IP
 from Raw import Raw
-from Tcp import TCP
+from Arp import ARP
 from Udp import UDP
-from conf import iface
-from HelperFuncs import ProtocolTypes, bytesToMac, bytesToIpv4
+from Tcp import TCP
+from Ip import IP
+import conf
 import time
-# https://stackoverflow.com/a/57133488/9100289
 
-ETH_P_ALL = 3 # not defined in socket module, sadly...
+# https://stackoverflow.com/a/57133488/9100289
+ETH_P_ALL = 3  # not defined in socket module, sadly...
 recv_sock = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(ETH_P_ALL))
-recv_sock.bind((iface, 0))
+recv_sock.bind((conf.iface, 0))
 
 send_sock = socket.socket(socket.AF_PACKET, socket.SOCK_RAW)
-send_sock.bind((iface, 0))
+send_sock.bind((conf.iface, 0))
 
 ethernetLen = 6+6+2
 arpLen      = 2+2+1+1+2+6+4+6+4

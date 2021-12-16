@@ -7,4 +7,5 @@ from Icmp import ICMP
 from Udp import UDP
 from Dns import DNS, DNSQR, DNSRR
 
-__all__ = ['sendreceive', 'ARP', 'IP', 'Ether', 'ICMP', 'UDP', 'DNS', 'DNSQR', 'DNSRR', 'RandShort', 'send']
+sr = sendreceive
+__all__ = ['sendreceive', 'ARP', 'IP', 'Ether', 'ICMP', 'UDP', 'DNS', 'DNSQR', 'DNSRR', 'RandShort', 'send', 'sr']
