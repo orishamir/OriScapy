@@ -198,7 +198,11 @@ class DNS(Layer):
         if not isinstance(self.ar, list) and self.ar:
             self.ar = [self.ar]
 
-        self.qdcount = int(len(self.qd)) if self.qd else 0
-        self.ancount = int(len(self.an)) if self.an else 0
-        self.nscount = int(len(self.ns)) if self.ns else 0
-        self.arcount = int(len(self.ar)) if self.ar else 0
+        if self.qdcount is None:
+            self.qdcount = int(len(self.qd)) if self.qd else 0
+        if self.ancount is None:
+            self.ancount = int(len(self.an)) if self.an else 0
+        if self.nscount is None:
+            self.nscount = int(len(self.ns)) if self.ns else 0
+        if self.arcount is None:
+            self.arcount = int(len(self.ar)) if self.ar else 0
