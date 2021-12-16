@@ -103,9 +103,7 @@ def isMulticastAddr(tstIp: str):
     octets = tstIp.split('.')
     if octets[0] == '224':
         return octets[1] in ('0', '1', '3', '4')
-    elif octets[0] in range(225, 238+1):
-        return True
-    elif octets[0] == '239':
+    elif octets[0] in range(225, 238+1) or octets[0] == '239':
         return True
     return False
 
