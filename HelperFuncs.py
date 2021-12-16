@@ -91,11 +91,23 @@ def isSameSubnet(tstIp, ip, subnet):
     return int(addr2concatbits(tstIp), 2) & subnet == int(addr2concatbits(ip), 2) & subnet
 
 def isBroadCastAddr(tstIp, mask: int):
+    if tstIp == '255.255.255.255' or tstIp == b'\xff\xff\xff\xff':
+        return True
     mask = bin(mask)[2:]
     mask = mask.replace('0', 'a').replace('1', '0').replace('a', '1')
     mask = int(mask, 2)
     host_part = bin(int(addr2concatbits(tstIp), 2) & mask)[2:]
     return len(host_part) == host_part.count('1')
+
+def isMulticastAddr(tstIp: str):
+    octets = tstIp.split('.')
+    if octets[0] == '224':
+        return octets[1] in ('0', '1', '3')
+    elif octets[0] in range(225, 238+1):
+        return True
+    elif octets[0] == '239':
+        return True
+    return False
 
 def RandShort():
     return _random.randint(2000, 2**16-100)

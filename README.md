@@ -75,7 +75,7 @@ from All import *
 # a DNS Query is sent to multicast ip "224.0.0.251" and port 5353, also known as  
 # multicast-DNS (mDNS). Inside the query, the qname should be "hostname"+".local"  
   
-pkt = Ether(dst="ff:ff:ff:ff:ff:ff")/IP(dst="224.0.0.251")/UDP(dport=5353)/DNS(qd=DNSQR(qname="myHostname.local"))  
+pkt = Ether()/IP(dst="224.0.0.251")/UDP(dport=5353)/DNS(qd=DNSQR(qname="myHostname.local"))  
   
 # IP may come back either to the multicast address, or directly to the host PC's IP.
 # Which means that you can't tell whether a packet is an answer to `pkt` based on

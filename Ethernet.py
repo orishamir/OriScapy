@@ -3,7 +3,6 @@ from HelperFuncs import *
 from Arp import ARP
 from Ip import IP
 from zlib import crc32
-
 import Sendreceive
 from conf import iface
 import struct
@@ -98,6 +97,9 @@ class Ether(Layer):
                     # If same subnet, use the direct PC's mac
                     mask = getSubnetmask(iface)
                     if isBroadCastAddr(dst_ip, mask):
+                        self.dst = "ff:ff:ff:ff:ff:ff"
+                    elif isMulticastAddr(dst_ip):
+                        print("WARNING: dst MAC address not specified when sending multicast. Set automatically to broadcast")
                         self.dst = "ff:ff:ff:ff:ff:ff"
                     elif isSameSubnet(dst_ip, getIpAddr(iface), mask):
                         _resolve = Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(pdst=dst_ip)
