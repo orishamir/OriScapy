@@ -1,5 +1,3 @@
-
-
 # OriScapy
 This is a custom-made version of the well known [Scapy library for python](https://scapy.net/).
 
@@ -41,7 +39,7 @@ Ethernet, ARP, IP, ICMP, UDP, DNS and maybe more in the future.
 ## Usage
 **First of all, don't. Please just use [Scapy](https://pypi.org/project/scapy/).**   
 But if you insist, then its basically the same as Scapy. Here are some examples:    
-**Note that OriScapy only works on Linux.**     
+**__Note that OriScapy only works on Linux.__**     
 #### ARP Queries
 
 ```python
@@ -50,7 +48,7 @@ from All import *
 ip = "192.168.1.2"
 
 # Resolve 192.168.1.2's MAC Address
-pkt = Ether() / ARP(pdst=ip)  # Everything is auto-completed :)
+pkt = Ether()/ARP(pdst=ip)  # Everything is auto-completed :)
 ans = sendreceive(pkt)
 print(f"{ip}'s MAC address is {ans.hwsrc}")
 ```
