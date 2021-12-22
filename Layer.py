@@ -25,7 +25,7 @@ class Layer:
         for key, val in all_attr.items():
             if key == 'data':
                 continue
-            if 'port' not in key and key != 'ttl' and val not in [0,1] and isinstance(val, int):
+            if 'port' not in key and key != 'ttl' and key not in ['qd', 'an'] and val not in [0,1] and isinstance(val, int):
                 val = hex(val)
             if key in ('qd', 'an') and val:
                 ret += f"       {Fore.MAGENTA}{key}{RST}="
@@ -52,8 +52,6 @@ class Layer:
         return item in self.data
 
     def __getitem__(self, item):
-        # if isinstance(item, int):
-        #     raise KeyError
         if item not in self:
             raise KeyError(f"{item.__name__} does not exist.")
         if isinstance(self, item):

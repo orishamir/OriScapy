@@ -91,6 +91,7 @@ def isSameSubnet(tstIp, ip, subnet):
     return int(addr2concatbits(tstIp), 2) & subnet == int(addr2concatbits(ip), 2) & subnet
 
 def isBroadCastAddr(tstIp, mask: int):
+    return False
     if tstIp == '255.255.255.255' or tstIp == b'\xff\xff\xff\xff':
         return True
     mask = bin(mask)[2:]

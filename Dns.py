@@ -24,7 +24,7 @@ class DNSQR(Layer):
     qtype    = None # https://en.wikipedia.org/wiki/List_of_DNS_record_types#Resource_records
     qclass   = None # https://datatracker.ietf.org/doc/html/rfc1035#section-3.2.3
 
-    def __init__(self, qname, *, qtype=None, qclass=None):
+    def __init__(self, qname="", qtype=None, qclass=None):
         self.qname = qname
         self.qtype = qtype
         self.qclass = qclass
@@ -145,6 +145,14 @@ class DNS(Layer):
         self.nscount = nscount
         self.arcount = arcount
 
+        if qd and not isinstance(qd, list):
+            qd = [qd]
+        if an and not isinstance(an, list):
+            an = [an]
+        if ns and not isinstance(ns, list):
+            ns = [ns]
+        if ar and not isinstance(ar, list):
+            ar = [ar]
         self.qd = qd
         self.an = an
         self.ns = ns
@@ -189,14 +197,6 @@ class DNS(Layer):
         if self.ra is None:
             self.ra = self.qr
 
-        if not isinstance(self.qd, list) and self.qd:
-            self.qd = [self.qd]
-        if not isinstance(self.an, list) and self.an:
-            self.an = [self.an]
-        if not isinstance(self.ns, list) and self.ns:
-            self.ns = [self.ns]
-        if not isinstance(self.ar, list) and self.ar:
-            self.ar = [self.ar]
 
         if self.qdcount is None:
             self.qdcount = int(len(self.qd)) if self.qd else 0

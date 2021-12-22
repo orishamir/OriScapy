@@ -210,13 +210,13 @@ def _is_response(res, pkt, *, flipIP, flipMAC, flipPort):
         pktIP: IP = pkt[IP]
         resIP: IP = res[IP]
 
-        # not the same packet plz
+        # plz res != pkt
         if pktIP.pdst == resIP.pdst and pktIP.psrc == resIP.psrc:
             return False
         # dst and src ip should have been switched.
         if flipIP and not (resIP.pdst == pktIP.psrc and resIP.psrc == pktIP.pdst):
             return False
-        if ICMP in res and ICMP in pkt:
+        if ICMP in pkt:
             return res[ICMP].id == pkt[ICMP].id and res[ICMP].seq == pkt[ICMP].seq
 
         if UDP in pkt:
@@ -243,7 +243,7 @@ def sendreceive(pkt: Ether, flipIP=True, flipMAC=False, flipPort=True, timeout=N
         if _is_response(res, pkt, flipIP=flipIP, flipMAC=flipMAC, flipPort=flipPort):
             return res
         if timeout and time.time()-st > timeout:
-            raise TimeoutError("sendreceive() timed out when sending packet", pkt, '\nHas timed out')
+            raise TimeoutError("sendreceive() timed out when sending packet", repr(pkt), '\nHas timed out')
 
 if __name__ == "__main__":
     pkt = Ether(dst="01:00:5e:00:00:fb")/IP(dst="224.0.0.251", ttl=1)/UDP(dport=5353)/DNS(qd=DNSQR(qname="ORIPC.local"))
