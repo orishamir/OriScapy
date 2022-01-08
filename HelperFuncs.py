@@ -119,7 +119,7 @@ class ProtocolTypes:
     default = 0x9000
 
 class AddressesType:
-    _ipv6_broadcast = ""  # does not exist lol
+    _ipv6_broadcast = ""  # does not exist lol (there is multicast to all nodes tho)
     mac_broadcast = "ff:ff:ff:ff:ff:ff"
     ipv4_broadcast = "255.255.255.255"
 

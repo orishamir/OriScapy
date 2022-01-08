@@ -21,33 +21,36 @@ class IP(Layer):
         TCP       = 0x6
         UDP       = 0x11
         IPv6      = 0x29
+        ICMPv6    = 0x3A
+        EIGRP     = 0x58
+        OSPF      = 0x59
 
     ProtocolTypesIP_dict = Bidict(vars(ProtocolTypesIP))
 
     class Flags:
         DF = 0b0
 
-    version          =  4            # IPv4
-    IHL              =  None         # How long the IP header is (in 4 bytes, 5 means 20 bytes long and is the min)
-    DSCP             =  0            # Something to do with Quality-Of-Service, Differentiated Services
-    ECN              =  0            # Something to do with Quality-Of-Service, Differentiated Services
-    total_length     =  None         # The total length header+data
-    id               =  None         # The ID, just make it random (mostly I guess for fragmentation)
-    flags            =  None         # dont fragment and more fragments and such
-    frag_off         =  0            # This is for IP fragmentation, lets not worry about it rn lmao
-    ttl              =  64           # everyone knows what time to live is stfu
-    protocol         =  None         # Protocols include TCP (0x6), ICMP (0x1) and such.
-    chksum           =  0            # stfu
-    psrc           =  None         # ...
-    pdst           =  None         # ...
-    options          =  None         # stfu
+    version       =  4            # IPv4
+    IHL           =  None         # How long the IP header is (in 4 bytes, 5 means 20 bytes long and is the min)
+    DSCP          =  0            # Something to do with Quality-Of-Service, Differentiated Services
+    ECN           =  0            # Something to do with Quality-Of-Service, Differentiated Services
+    total_length  =  None         # The total length header+data
+    id            =  None         # The ID, just make it random (mostly I guess for fragmentation)
+    flags         =  None         # dont fragment and more fragments and such
+    frag_off      =  0            # This is for IP fragmentation, lets not worry about it rn lmao
+    ttl           =  64           # everyone knows what time to live is stfu
+    protocol      =  None         # Protocols include TCP (0x6), ICMP (0x1) and such.
+    chksum        =  0            # stfu
+    psrc          =  None         # ...
+    pdst          =  None         # ...
+    options       =  None         # stfu
 
     def __init__(self, *, src=None, dst=None, ttl=64, protocol=ProtocolTypesIP.ICMP, id=None):
-        self.psrc         =  src
-        self.pdst         =  dst
-        self.ttl            =  ttl
-        self.protocol       =  protocol
-        self.id             =  id
+        self.psrc      =  src
+        self.pdst      =  dst
+        self.ttl       =  ttl
+        self.protocol  =  protocol
+        self.id        =  id
 
         if not isIpv4(self.pdst):
             self.pdst = socket.gethostbyname(self.pdst)

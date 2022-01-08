@@ -129,8 +129,8 @@ class DNS(Layer):
 
     def __init__(self, qd=None, an=None, ns=None, ar=None, rd=None, qr=None, ra=None, opcode=None, rcode=None, id=None,
                  qdcount=None, ancount=None, nscount=None, arcount=None):
-        assert isinstance(qd, DNSQR | None | list), "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\bValueError: qd should be of type DNSQR (DNS Query Record)"
-        assert isinstance(an, DNSRR | None | list), "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\bValueError: an should be of type DNSRR (DNS Resource Record)"
+        assert isinstance(qd, DNSQR | None | list), "ValueError: qd should be of type DNSQR (DNS Query Record)"
+        assert isinstance(an, DNSRR | None | list), "ValueError: an should be of type DNSRR (DNS Resource Record)"
 
         self.rd = rd
         self.qr = qr

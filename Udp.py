@@ -28,7 +28,7 @@ class UDP(Layer):
         if self.sport is None:
             self.sport = RandShort()
         if self.dport is None:
-            pass
+            raise ValueError("Destionation Port in UDP header empty.")
         #self.data = bytes(self.data)
 
         self.length = 8 + len(self.data)

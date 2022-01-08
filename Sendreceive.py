@@ -116,6 +116,18 @@ def parseData(data, pkt):
 
 def parseDNS(data):
     def parseName(dta):
+        # A name can be a pointer to a previous name, or just a regular string
+        # (https://datatracker.ietf.org/doc/html/rfc1035#section-4.1.4)
+        # Its a pointer iff the first 2 bits are 1. if its a pointer then the
+        # "address" the pointer to pointing to is the rest of the 8 bit number.
+        # Otherwise, its a string. The name is represented as a sequence of labels, where
+        #                 each label consists of a length octet followed by that
+        #                 number of octets. The domain name terminates with the
+        #                 zero length octet for the null label of the root.  Note
+        #                 that this field may be an odd number of octets; no
+        #                 padding is used.
+        # Example:  www.google.com=\x03www\x06google\x03com\x00
+        # https://datatracker.ietf.org/doc/html/rfc1035#section-4.1.2
         if (dta[0] >> 6) == 0b11:
             # is pointer.
             pointerVal = ((dta[0] << 8) | dta[1]) & 0b0011111111111111
@@ -169,7 +181,7 @@ def parseDNS(data):
                 data = data[4:]
                 qd.append(DNSQR(qname=qname, qtype=qtype, qclass=qclass))
             elif section == 'an':
-                #  may be a pointer to the name (offset from DNS header start), or just a name.
+                # may be a pointer to the name (offset from DNS header start), or just a name.
                 rname = parseName(data)
                 data = data[data.index(b'\x00'):]
 
@@ -213,7 +225,7 @@ def _is_response(res, pkt, *, flipIP, flipMAC, flipPort):
         # plz res != pkt
         if pktIP.pdst == resIP.pdst and pktIP.psrc == resIP.psrc:
             return False
-        # dst and src ip should have been switched.
+        # dst and src ip should have been switched. (if flipIP is True)
         if flipIP and not (resIP.pdst == pktIP.psrc and resIP.psrc == pktIP.pdst):
             return False
         if ICMP in pkt:
