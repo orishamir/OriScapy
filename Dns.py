@@ -2,7 +2,6 @@ import struct
 from Layer import Layer
 from HelperFuncs import RandShort, ipv4ToBytes, isIpv4, Bidict
 
-
 # noinspection SpellCheckingInspection
 # https://datatracker.ietf.org/doc/html/rfc1035#section-4.1.1
 class QTYPES:
