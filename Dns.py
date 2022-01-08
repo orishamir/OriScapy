@@ -1,5 +1,4 @@
 import struct
-
 from Layer import Layer
 from HelperFuncs import RandShort, ipv4ToBytes, isIpv4, Bidict
 
