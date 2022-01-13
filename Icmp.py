@@ -61,7 +61,9 @@ class ICMP(Layer):
             self.seq = 0
 
     def __str__(self):
-        self.type = self.TypesICMP_dict[self.type]
+        if self.type:
+            self.type = self.TypesICMP_dict[self.type]
         ret = super(ICMP, self).__str__()
-        self.type = self.TypesICMP_dict[self.type]
+        if self.type:
+            self.type = self.TypesICMP_dict[self.type]
         return ret

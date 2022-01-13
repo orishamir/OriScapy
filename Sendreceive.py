@@ -12,13 +12,19 @@ from Ip import IP
 import conf
 import time
 
-# https://stackoverflow.com/a/57133488/9100289
-ETH_P_ALL = 3  # not defined in socket module, sadly...
-recv_sock = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(ETH_P_ALL))
-recv_sock.bind((conf.iface, 0))
+def prepareSockets(iface):
+    # https://stackoverflow.com/a/57133488/9100289
+    global recv_sock
+    global send_sock
 
-send_sock = socket.socket(socket.AF_PACKET, socket.SOCK_RAW)
-send_sock.bind((conf.iface, 0))
+    ETH_P_ALL = 3  # not defined in socket module, sadly...
+    recv_sock = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(ETH_P_ALL))
+    recv_sock.bind((conf.iface, 0))
+
+    send_sock = socket.socket(socket.AF_PACKET, socket.SOCK_RAW)
+    send_sock.bind((conf.iface, 0))
+
+    conf.iface = iface
 
 ethernetLen = 6+6+2
 arpLen      = 2+2+1+1+2+6+4+6+4
@@ -232,7 +238,7 @@ def _is_response(res, pkt, *, flipIP, flipMAC, flipPort):
             return res[ICMP].id == pkt[ICMP].id and res[ICMP].seq == pkt[ICMP].seq
 
         if UDP in pkt:
-            # dport and sport should have been switched
+            # dport and sport should have been switched (maybe)
             if flipPort and not (res[UDP].dport == pkt[UDP].sport and res[UDP].sport == pkt[UDP].dport):
                 return False
             return True
@@ -255,6 +261,31 @@ def sendreceive(pkt: Ether, flipIP=True, flipMAC=False, flipPort=True, timeout=N
         if _is_response(res, pkt, flipIP=flipIP, flipMAC=flipMAC, flipPort=flipPort):
             return res
         if timeout and time.time()-st > timeout:
+            raise TimeoutError("sendreceive() timed out when sending packet", repr(pkt), '\nHas timed out')
+
+def sniff(ismatch, onmatch, exitAfterFirstMatch=False, timeout=None):
+    """
+
+    :param ismatch: The function to check if a packet is a match
+    :param onmatch: The function to call when a matched packet is found
+    :param exitAfterFirstMatch: Should the function exist after the first match
+    :param timeout:
+    :return:
+    """
+    st = time.time()
+    while True:
+        res = recv_sock.recvfrom(1500)[0]
+        try:
+            res = parseEther(res)
+        except (ValueError, struct.error, IndexError):
+            continue
+        if res is None:
+            continue
+        if ismatch(res):
+            onmatch()
+            if exitAfterFirstMatch:
+                return
+        if timeout and time.time() - st > timeout:
             raise TimeoutError("sendreceive() timed out when sending packet", repr(pkt), '\nHas timed out')
 
 if __name__ == "__main__":
