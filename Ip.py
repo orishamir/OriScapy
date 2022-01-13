@@ -1,5 +1,4 @@
 import socket
-
 from Layer import Layer
 from Tcp import TCP
 from Udp import UDP
@@ -12,18 +11,8 @@ import struct
 # https://datatracker.ietf.org/doc/html/rfc791#section-3.1
 # https://en.wikipedia.org/wiki/IPv4#Packet_structure
 
-# IPv4 protocol nums: https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers
-
 # noinspection SpellCheckingInspection
 class IP(Layer):
-    class ProtocolTypesIP:
-        ICMP      = 0x1
-        TCP       = 0x6
-        UDP       = 0x11
-        IPv6      = 0x29
-        ICMPv6    = 0x3A
-        EIGRP     = 0x58
-        OSPF      = 0x59
 
     ProtocolTypesIP_dict = Bidict(vars(ProtocolTypesIP))
 

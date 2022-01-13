@@ -84,6 +84,9 @@ def parseIP(data, pkt):
         pkt = parseData(data, pkt)
     return pkt
 
+def parseIPv6(data, pkt):
+    pass
+
 def parseEther(data):
     # Parse Ethernet
     eth = data[:ethernetLen]
@@ -110,7 +113,8 @@ def parseEther(data):
     elif type == ProtocolTypes.IPv4:
         # print("An IP packet")
         pkt = parseIP(data, pkt)
-
+    elif type == ProtocolTypes.IPv6:
+        pkt = parseIPv6(data, pkt)
     return pkt
 
 def parseData(data, pkt):

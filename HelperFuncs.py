@@ -118,6 +118,17 @@ class ProtocolTypes:
     ARP     = 0x0806
     default = 0x9000
 
+# IPv4 protocol nums: https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers
+class ProtocolTypesIP:
+    ICMP       = 0x1
+    TCP        = 0x6
+    UDP        = 0x11
+    IPv6       = 0x29
+    ICMPv6     = 0x3A
+    EIGRP      = 0x58
+    OSPF       = 0x59
+    IPv6_NoNxt = 0x3B
+
 class AddressesType:
     _ipv6_broadcast = ""  # does not exist lol (there is multicast to all nodes tho)
     mac_broadcast = "ff:ff:ff:ff:ff:ff"
