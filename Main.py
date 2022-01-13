@@ -1,4 +1,6 @@
 from All import *
+from Ipv6 import IPv6
+
 """
 mDNS Poisoner:
 def ismatch_mdns(pkt: Ether):
@@ -21,8 +23,6 @@ def onmatch_mdns(pkt: Ether):
 
 sniff(ismatch_mdns, onmatch_mdns)
 """
-from Sendreceive import parseEther
-pktbytes = b'\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x86\xdd`\x00\x00\x00\x00\x00;@\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01'
-
-pkt = parseEther(pktbytes)
-print(pkt)
+from HelperFuncs import ipv6ToBytes
+pkt = IPv6(psrc="::1", pdst="::1")
+print(bytes(pkt))

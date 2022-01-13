@@ -2,6 +2,7 @@ import netifaces as _netifaces
 import struct as _struct
 import random as _random
 from re import findall as _findall
+import ipaddress
 
 def checksum(packet):
     total = 0
@@ -33,16 +34,7 @@ def ipv4ToBytes(ip: str):
     return _struct.pack("BBBB", *[int(bt) for bt in bts])
 
 def ipv6ToBytes(ip: str):
-    zeroOctets = 8-ip.count(':')
-
-    ip = ip.replace('::', ':0000:'*zeroOctets).replace('::', ':')
-    ret = b''
-    for octet in ip.split(':'):
-        bt = hex(int(octet, 16))[2:].zfill(4)
-        ret += _struct.pack('BB', *[int(x, 16) for x in _findall('..', bt)])
-
-    assert len(ret) == 16, f"ipv6 to bytes error {ip=}"
-    return ret
+    return ipaddress.IPv6Address(ip).packed
 
 def bytesToIpv4(bts: bytes):
     assert len(bts) == 4, 'IPv4 should have 4 bytes'
@@ -72,6 +64,9 @@ def getMacAddr(iface):
 def getIpAddr(iface):
     return _netifaces.ifaddresses(iface)[_netifaces.AF_INET][0]['addr']
 
+def getIpV6Addr(iface):
+    return _netifaces.ifaddresses(iface)[_netifaces.AF_INET6][0]['addr']
+
 def addr2concatbits(addr):
     return ''.join(bin(i)[2:].zfill(8) for i in _struct.pack('BBBB', *map(int, addr.split('.'))))
 
@@ -100,13 +95,9 @@ def isBroadCastAddr(tstIp, mask: int):
     host_part = bin(int(addr2concatbits(tstIp), 2) & mask)[2:]
     return len(host_part) == host_part.count('1')
 
+
 def isMulticastAddr(tstIp: str):
-    octets = tstIp.split('.')
-    if octets[0] == '224':
-        return octets[1] in ('0', '1', '3', '4')
-    elif octets[0] in range(225, 238+1) or octets[0] == '239':
-        return True
-    return False
+    return ipaddress.IPv4Address(tstIp).is_multicast
 
 def RandShort():
     return _random.randint(2000, 2**16-100)

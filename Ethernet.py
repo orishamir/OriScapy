@@ -6,6 +6,7 @@ from zlib import crc32
 import Sendreceive
 from conf import iface
 import struct
+from Ipv6 import IPv6
 
 # Ben Eater - "How do CRCs work?"
 # https://www.youtube.com/watch?v=izG7qT0EpBw
@@ -87,8 +88,11 @@ class Ether(Layer):
             if self.dst is None:
                 self.dst = AddressesType.mac_broadcast
 
-        elif isinstance(self.data, IP):
-            self.etherType = ProtocolTypes.IPv4
+        elif isinstance(self.data, IP | IPv6):
+            if isinstance(self.data, IPv6):
+                self.etherType = ProtocolTypes.IPv6
+            else:
+                self.etherType = ProtocolTypes.IPv4
             if self.dst is None:
                 # resolve ip to mac automatically
                 # send arp and receive automatically.
