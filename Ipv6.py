@@ -44,7 +44,7 @@ class IPv6(Layer):
             self.flow_label = 0
 
         if self.payload_length is None:
-            if self.data:
+            if hasattr(self, "data"):
                 self.payload_length = len(self.data)
             else:
                 self.payload_length = 0
