@@ -1,18 +1,20 @@
+import struct
 import Ethernet
 from Layer import Layer
-import struct
 from HelperFuncs import *
+
 # https://datatracker.ietf.org/doc/html/rfc2460#section-3
+# https://en.wikipedia.org/wiki/IPv6_packet
 
 class IPv6(Layer):
-    version = None
-    traffic_class = None   # Something with QoS?
-    flow_label = None
+    version        = None  # Is 6
+    traffic_class  = None  # Something with QoS?
+    flow_label     = None
     payload_length = None
-    protocol = None         # RFC calls this "Next Header"...
-    hoplimit = None         # Literally the same as TTL
-    psrc = None
-    pdst = None
+    protocol       = None  # RFC calls this "Next Header"...
+    hoplimit       = None  # Literally the same as TTL
+    psrc           = None
+    pdst           = None
 
     def __init__(self, psrc=None, pdst=None):
         self.psrc = psrc
