@@ -74,17 +74,6 @@ class Layer:
     def _autocomplete(self):
         pass
 
-    def __eq__(self, other):
-        raise NotImplementedError
-        if not isinstance(other, Layer):
-            return False
-
-        if self.__dict__ != other.__dict__:
-            return False
-        if not hasattr(self, 'data'):
-            return True
-        return self.data == other.data
-
     def __len__(self):
         return len(bytes(self))
 

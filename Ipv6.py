@@ -1,5 +1,4 @@
 import struct
-import Ethernet
 from Layer import Layer
 from HelperFuncs import *
 
@@ -10,7 +9,7 @@ class IPv6(Layer):
     version        = None  # Is 6
     traffic_class  = None  # Something with QoS?
     flow_label     = None
-    payload_length = None
+    payload_length = None  # Just data len
     protocol       = None  # RFC calls this "Next Header"...
     hoplimit       = None  # Literally the same as TTL
     psrc           = None
@@ -22,6 +21,7 @@ class IPv6(Layer):
 
     def __bytes__(self):
         self._autocomplete()
+
         srcbytes = ipv6ToBytes(self.psrc)
         dstbytes = ipv6ToBytes(self.pdst)
         pkt = b''

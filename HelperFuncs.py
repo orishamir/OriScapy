@@ -86,15 +86,8 @@ def isSameSubnet(tstIp, ip, subnet):
     return int(addr2concatbits(tstIp), 2) & subnet == int(addr2concatbits(ip), 2) & subnet
 
 def isBroadCastAddr(tstIp, mask: int):
-    return False
-    if tstIp == '255.255.255.255' or tstIp == b'\xff\xff\xff\xff':
-        return True
-    mask = bin(mask)[2:]
-    mask = mask.replace('0', 'a').replace('1', '0').replace('a', '1')
-    mask = int(mask, 2)
-    host_part = bin(int(addr2concatbits(tstIp), 2) & mask)[2:]
-    return len(host_part) == host_part.count('1')
-
+    net = ipaddress.ip_network(f"{tstIp}/{str(mask).count('1')}")
+    return tstIp == '255.255.255.255' or net.broadcast_address == tstIp
 
 def isMulticastAddr(tstIp: str):
     return ipaddress.IPv4Address(tstIp).is_multicast

@@ -23,4 +23,4 @@ class conf(metaclass=MyMeta):
 
 srp1 = srp = sr = sendreceive
 __all__ = ['sendreceive', 'ARP', 'IP', 'Ether', 'ICMP', 'UDP', 'DNS', 'DNSQR', 'DNSRR', 'RandShort', 'send', 'sr',
-           'conf', 'sniff']
+           'srp1', 'srp', 'conf', 'sniff']
