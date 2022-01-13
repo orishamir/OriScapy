@@ -121,8 +121,10 @@ print(res)
 ```
     
 
-#### Generating DNS Responses (Can be used for Cache Poisoning)
+#### mDNS Cache Poisoning 
 ```python
 from All import *
 # Example TBC
+# Requires IPv6 since Windows 10 only registers
+# a spoofed mDNS if both IPv4 and IPv6 are sent.
 ```
