@@ -26,6 +26,8 @@ def prepareSockets(iface):
 
     conf.iface = iface
 
+prepareSockets(conf.iface)
+
 ethernetLen = 6+6+2
 arpLen      = 2+2+1+1+2+6+4+6+4
 ipLen       = 2+2+2+2+2+2+4+4
@@ -113,7 +115,7 @@ def parseEther(data):
 
 def parseData(data, pkt):
     if UDP in pkt:
-        if 53 in (pkt[UDP].dport, pkt[UDP].sport) or 5353 in (pkt[UDP].dport, pkt[UDP].sport):
+        if 53 in (pkt[UDP].dport, pkt[UDP].sport) or 5353 in (pkt[UDP].dport, pkt[UDP].sport) or 5355 in (pkt[UDP].dport, pkt[UDP].sport):
             return pkt/parseDNS(data)
         elif 67 in (pkt[UDP].dport, pkt[UDP].sport):
             # DHCP
@@ -282,7 +284,7 @@ def sniff(ismatch, onmatch, exitAfterFirstMatch=False, timeout=None):
         if res is None:
             continue
         if ismatch(res):
-            onmatch()
+            onmatch(res)
             if exitAfterFirstMatch:
                 return
         if timeout and time.time() - st > timeout:

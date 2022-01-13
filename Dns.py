@@ -29,9 +29,9 @@ class DNSQR(Layer):
 
     def __str__(self):
         self._autocomplete()
-        self.qtype = QTYPES_dict[self.qtype]
+        self.qtype = QTYPES_dict.get(self.qtype, None)
         ret = super(DNSQR, self).__str__()
-        self.qtype = QTYPES_dict[self.qtype]
+        self.qtype = QTYPES_dict.get(self.qtype, None)
         return ret
 
     def __bytes__(self):
@@ -63,9 +63,9 @@ class DNSRR(Layer):
     name       = None
     type       = None
     rclass     = None
-    ttl        = None
-    rdlength   = None
-    rdata      = None
+    ttl        = None   # ttl in seconds (used for caching)
+    rdlength   = None   # length of rdata
+    rdata      = None   # the actual data
 
     def __init__(self, name=None, type=None, rclass=None, ttl=None, rdata=None):
         self.name   = name
@@ -75,9 +75,9 @@ class DNSRR(Layer):
         self.rdata  = rdata
 
     def __str__(self):
-        self.type = QTYPES_dict[self.type]
+        self.type = QTYPES_dict.get(self.type, None)
         ret = super(DNSRR, self).__str__()
-        self.type = QTYPES_dict[self.type]
+        self.type = QTYPES_dict.get(self.type, None)
         return ret
 
     def __bytes__(self):
@@ -113,23 +113,24 @@ class DNS(Layer):
     id          = None
     qr          = 0  # 0=query  1=answer
     opcode      = 0  # 0=standard query  1=inverse query  2=status  3-15 reserved lmfao
-    AA          = 0
-    tc          = 0
-    rd          = 1
-    ra          = 0
-    Z           = 0x0
-    rcode       = 0
+    aa          = 0  # Authorative for zone
+    tc          = 0  # Was the msg truncated
+    rd          = 1  # recursion desired
+    ra          = 0  # recursion available
+    Z           = 0x0  # reserved
+    rcode       = 0  # Response code 0=noError 1=format error 2=server failure and more errors (0-5)
 
     qdcount    = None
     ancount    = None
     nscount    = None
     arcount    = None
 
-    def __init__(self, qd=None, an=None, ns=None, ar=None, rd=None, qr=None, ra=None, opcode=None, rcode=None, id=None,
+    def __init__(self, qd=None, an=None, ns=None, ar=None, rd=None, qr=None, ra=None, aa=None, opcode=None, rcode=None, id=None,
                  qdcount=None, ancount=None, nscount=None, arcount=None):
         assert isinstance(qd, DNSQR | None | list), "ValueError: qd should be of type DNSQR (DNS Query Record)"
         assert isinstance(an, DNSRR | None | list), "ValueError: an should be of type DNSRR (DNS Resource Record)"
 
+        self.aa = aa
         self.rd = rd
         self.qr = qr
         self.ra = ra
@@ -159,7 +160,7 @@ class DNS(Layer):
     def __bytes__(self):
         self._autocomplete()
 
-        byte2 = (self.qr << 15) | (self.opcode << 11) | (self.AA << 10) | (self.tc << 9) | (self.rd << 8)\
+        byte2 = (self.qr << 15) | (self.opcode << 11) | (self.aa << 10) | (self.tc << 9) | (self.rd << 8) \
                 | (self.ra << 7) | (self.Z << 4) | self.rcode
 
         pkt = struct.pack('!HHHHHH', self.id, byte2, self.qdcount, self.ancount, self.nscount, self.arcount)
@@ -176,6 +177,22 @@ class DNS(Layer):
             pkt += bytes(self.data)
         return pkt
 
+    def __contains__(self, item):
+        if super(DNS, self).__contains__(item):
+            return True
+        elif item is DNSQR:
+            return self.qd
+        elif item is DNSRR:
+            return self.an
+        return False
+
+    def __getitem__(self, item):
+        if item is DNSQR:
+            return self.qd
+        elif item is DNSRR:
+            return self.an
+        return super(DNS, self).__getitem__(item)
+
     def _autocomplete(self):
         if self.id is None:
             self.id = RandShort()
@@ -190,11 +207,13 @@ class DNS(Layer):
             self.rcode = 0
 
         if self.qr is None:
-            self.qr = 0
+            self.qr = bool(self.an)
 
         if self.ra is None:
             self.ra = self.qr
 
+        if self.aa is None:
+            self.aa = self.qr  # if is answer then im authorative for NS
 
         if self.qdcount is None:
             self.qdcount = int(len(self.qd)) if self.qd else 0

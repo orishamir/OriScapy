@@ -1,4 +1,4 @@
-from Sendreceive import sendreceive, send, prepareSockets
+from Sendreceive import sendreceive, send, sniff, prepareSockets
 from HelperFuncs import RandShort
 from Dns import DNS, DNSQR, DNSRR
 from Ethernet import Ether
@@ -22,4 +22,5 @@ class conf(metaclass=MyMeta):
     pass
 
 srp1 = srp = sr = sendreceive
-__all__ = ['sendreceive', 'ARP', 'IP', 'Ether', 'ICMP', 'UDP', 'DNS', 'DNSQR', 'DNSRR', 'RandShort', 'send', 'sr', 'conf']
+__all__ = ['sendreceive', 'ARP', 'IP', 'Ether', 'ICMP', 'UDP', 'DNS', 'DNSQR', 'DNSRR', 'RandShort', 'send', 'sr',
+           'conf', 'sniff']
