@@ -26,8 +26,12 @@ class ARP(Layer):
     OPCODES_DICT = Bidict(vars(Opcodes))
 
     class HardwareTypes:
-        Ethernet = 0x1
-        Dot11    = 0x6
+        # https://www.iana.org/assignments/arp-parameters/arp-parameters.xhtml#arp-parameters-2
+        Ethernet   = 0x1
+        Dot11      = 0x6
+        FrameRelay = 0xf
+        HDLC       = 0x11
+        Serial     = 0x14  # PPP?
 
     HardwareTypes_dict = Bidict(vars(HardwareTypes))
 
