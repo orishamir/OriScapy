@@ -121,9 +121,7 @@ class IP(Layer):
         self.chksum = 0
 
     def __str__(self):
-        if self.protocol:
-            self.protocol = self.ProtocolTypesIP_dict[self.protocol]
+        self.protocol = self.ProtocolTypesIP_dict.get(self.protocol, None)
         ret = super(IP, self).__str__()
-        if self.protocol:
-            self.protocol = self.ProtocolTypesIP_dict[self.protocol]
+        self.protocol = self.ProtocolTypesIP_dict.get(self.protocol, None)
         return ret
