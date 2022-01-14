@@ -1,10 +1,15 @@
 import struct
+import conf
+from Icmp import ICMP
+from Icmpv6 import NDPQuery, ICMPv6
 from Layer import Layer
 from HelperFuncs import *
 
+# IPv6 Pseudo Header:
+# https://www.rfc-editor.org/rfc/rfc2460.html#section-8.1
+
 # https://datatracker.ietf.org/doc/html/rfc2460#section-3
 # https://en.wikipedia.org/wiki/IPv6_packet
-
 class IPv6(Layer):
     version        = None  # Is 6
     traffic_class  = None  # Something with QoS?
@@ -15,12 +20,20 @@ class IPv6(Layer):
     psrc           = None
     pdst           = None
 
-    def __init__(self, psrc=None, pdst=None):
+    def __init__(self, psrc=None, pdst=None, protocol=None, traffic_class=None, flow_label=None, hoplimit=None, ttl=None):
+        self.traffic_class = traffic_class
+        self.flow_label = flow_label
+        self.protocol = protocol
+        self.hoplimit = hoplimit or ttl
         self.psrc = psrc
         self.pdst = pdst
 
     def __bytes__(self):
         self._autocomplete()
+        if self.psrc is None:
+            raise TypeError("Source IP not specified")
+        if self.pdst is None:
+            raise TypeError("Destination IP not specified")
 
         srcbytes = ipv6ToBytes(self.psrc)
         dstbytes = ipv6ToBytes(self.pdst)
@@ -31,6 +44,11 @@ class IPv6(Layer):
         pkt += struct.pack('!BB', self.protocol, self.hoplimit)
         pkt += srcbytes
         pkt += dstbytes
+        if hasattr(self, 'data'):
+            if isinstance(self.data, ICMPv6):
+                pkt += self.data.toBytes(srcbytes, dstbytes)
+            else:
+                pkt += bytes(self.data)
         return pkt
 
     def _autocomplete(self):
@@ -49,8 +67,22 @@ class IPv6(Layer):
             else:
                 self.payload_length = 0
 
-        if self.protocol is None:
-            self.protocol = ProtocolTypesIP.IPv6_NoNxt
-
         if self.hoplimit is None:
             self.hoplimit = 64
+
+        if self.psrc is None:
+            self.psrc = getIpV6Addr(conf.iface)
+
+        if self.pdst is None:
+            try:
+                self.pdst = self.data._dst__addr
+            except AttributeError:
+                pass
+            if NDPQuery in self:
+                q = self[NDPQuery]
+                self.pdst = q.target
+
+        try:
+            self.protocol = self.data._my__protocol
+        except AttributeError:
+            self.protocol = ProtocolTypesIP.IPv6_NoNxt

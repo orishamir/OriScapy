@@ -6,6 +6,7 @@ from HelperFuncs import RandShort
 
 # noinspection SpellCheckingInspection
 class ICMP(Layer):
+    _my__protocol = ProtocolTypesIP.ICMP
     # https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol#Control_messages
     class TypesICMP:
         echo_reply         = 0
@@ -43,7 +44,7 @@ class ICMP(Layer):
         # if not hasattr()
 
         pkt = struct.pack('>BBHHH', self.type, self.code, 0, self.id, self.seq)
-        self.checksum = checksum(pkt+self.data)
+        self.checksum = chksum16bit(pkt + self.data)
         pkt = pkt[:1+1] + struct.pack('>H', self.checksum) + pkt[1+1+2:]
         pkt += self.data
         return pkt

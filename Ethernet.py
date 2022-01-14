@@ -2,7 +2,6 @@ from Layer import Layer
 from HelperFuncs import *
 from Arp import ARP
 from Ip import IP
-from zlib import crc32
 import Sendreceive
 from conf import iface
 import struct
@@ -62,6 +61,13 @@ class Ether(Layer):
 
         """
         self._autocomplete()
+        if not self.dst:
+            raise TypeError("Destination MAC not set")
+        if not self.src:
+            raise TypeError("Source MAC not set")
+
+        if not hasattr(self, 'data'):
+            self.data = b''
 
         dataBytes = self.data.__bytes__()
         if not isinstance(dataBytes, list):
@@ -81,7 +87,8 @@ class Ether(Layer):
     def _autocomplete(self):
         if self.src is None:
             self.src = getMacAddr(iface)
-
+        if not hasattr(self, 'data'):
+            return
         # Determine self.etherType based on data
         if isinstance(self.data, ARP):
             self.etherType = ProtocolTypes.ARP
@@ -96,6 +103,8 @@ class Ether(Layer):
             if self.dst is None:
                 # resolve ip to mac automatically
                 # send arp and receive automatically.
+                if IPv6 in self:
+                    raise NotImplementedError("Ethernet autocompletion for IPv6 not implemented yet")
                 # if IP in self:
                 dst_ip = self[IP].pdst
                 # If same subnet, use the direct PC's mac

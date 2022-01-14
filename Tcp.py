@@ -2,9 +2,10 @@ from Layer import Layer
 import struct
 
 # https://datatracker.ietf.org/doc/html/rfc793#section-3.1
-from HelperFuncs import RandShort, checksum
+from HelperFuncs import RandShort, chksum16bit, ProtocolTypesIP
 
 class TCP(Layer):
+    _my__protocol = ProtocolTypesIP.TCP
     sport     = None
     dport     = None
     seq       = None
@@ -46,7 +47,7 @@ class TCP(Layer):
         pkt += struct.pack(">H", self.mtu)
 
         # IP pseudo header included in checksum
-        self.chksum = checksum(pkt + struct.pack("!H", self.urgPtr))# + self.data if hasattr(self, 'data') else b'')
+        self.chksum = chksum16bit(pkt + struct.pack("!H", self.urgPtr))# + self.data if hasattr(self, 'data') else b'')
 
         pkt += struct.pack(">HH", self.chksum, self.urgPtr)
 

@@ -1,4 +1,5 @@
 from All import *
+from Icmpv6 import NDPQuery
 from Ipv6 import IPv6
 
 """
@@ -23,6 +24,9 @@ def onmatch_mdns(pkt: Ether):
 
 sniff(ismatch_mdns, onmatch_mdns)
 """
-from HelperFuncs import ipv6ToBytes
-pkt = IPv6(psrc="::1", pdst="::1")
-print(bytes(pkt))
+# pkt = Ether(src="11:22:33:44:55:66", dst="ff:ff:ff:ff:ff:ff")/IPv6(psrc="::1", pdst="::1")/UDP(dport=5353)/DNS(qd=DNSQR(qname="oripc.local"))
+# send(pkt)
+# print(pkt.__bytes__())
+
+pkt = Ether(dst="ff:ff:ff:ff:ff:ff")/IPv6()/NDPQuery("::1")
+print(pkt.__bytes__())

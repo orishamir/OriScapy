@@ -4,7 +4,7 @@ from Tcp import TCP
 from Udp import UDP
 from HelperFuncs import *
 from Icmp import ICMP
-from conf import iface
+import conf
 import struct
 
 # RFC:
@@ -45,6 +45,10 @@ class IP(Layer):
 
     def __bytes__(self):
         self._autocomplete()
+        if self.psrc is None:
+            raise TypeError("Source IP not set")
+        if self.pdst is None:
+            raise TypeError("Destination IP not set")
 
         src_ip = ipv4ToBytes(self.psrc)
         dst_ip = ipv4ToBytes(self.pdst)
@@ -60,7 +64,7 @@ class IP(Layer):
             tmp_pkt += struct.pack("!H", 0)
             tmp_pkt += struct.pack("!B", self.ttl)
             tmp_pkt += struct.pack("!B", self.protocol)
-            tmp_pkt += struct.pack("!H", checksum(tmp_pkt + src_ip + dst_ip))
+            tmp_pkt += struct.pack("!H", chksum16bit(tmp_pkt + src_ip + dst_ip))
             tmp_pkt += src_ip
             tmp_pkt += dst_ip
             return tmp_pkt
@@ -84,7 +88,7 @@ class IP(Layer):
             tmp_pkt += struct.pack("!H", (flags << 13) | offset)
             tmp_pkt += struct.pack("!B", self.ttl)
             tmp_pkt += struct.pack("!B", self.protocol)
-            tmp_pkt += struct.pack("!H", checksum(tmp_pkt+src_ip+dst_ip))
+            tmp_pkt += struct.pack("!H", chksum16bit(tmp_pkt + src_ip + dst_ip))
             tmp_pkt += src_ip
             tmp_pkt += dst_ip
 
@@ -103,16 +107,12 @@ class IP(Layer):
             self.id = RandShort()
 
         if self.psrc is None:
-            self.psrc = getIpAddr(iface)
+            self.psrc = getIpAddr(conf.iface)
 
-        if not hasattr(self, 'data'):
-            self.protocol = self.ProtocolTypesIP.ICMP
-        elif isinstance(self.data, ICMP):
-            self.protocol = self.ProtocolTypesIP.ICMP
-        elif isinstance(self.data, TCP):
-            self.protocol = self.ProtocolTypesIP.TCP
-        elif isinstance(self.data, UDP):
-            self.protocol = self.ProtocolTypesIP.UDP
+        try:
+            self.protocol = self.data._my__protocol
+        except AttributeError:
+            self.protocol = ProtocolTypesIP.ICMP
 
         if self.pdst is None:
             print("Warning: Destination IP is automatically set to broadcast.")

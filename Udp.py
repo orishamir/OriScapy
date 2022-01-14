@@ -1,11 +1,12 @@
 import struct
 
 from Layer import Layer
-from HelperFuncs import RandShort
+from HelperFuncs import RandShort, ProtocolTypesIP
 
 # noinspection SpellCheckingInspection
 # https://en.wikipedia.org/wiki/User_Datagram_Protocol#UDP_datagram_structure
 class UDP(Layer):
+    _my__protocol = ProtocolTypesIP.UDP
     sport     =   None
     dport     =   None
     length    =   None

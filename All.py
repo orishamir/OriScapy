@@ -6,6 +6,8 @@ from Icmp import ICMP
 from Arp import ARP
 from Udp import UDP
 from Ip import IP
+from Ipv6 import IPv6
+from Icmpv6 import ICMPv6, NDPQuery
 import conf as _conf
 
 class MyMeta(type):
@@ -22,5 +24,5 @@ class conf(metaclass=MyMeta):
     pass
 
 srp1 = srp = sr = sendreceive
-__all__ = ['sendreceive', 'ARP', 'IP', 'Ether', 'ICMP', 'UDP', 'DNS', 'DNSQR', 'DNSRR', 'RandShort', 'send', 'sr',
-           'srp1', 'srp', 'conf', 'sniff']
+__all__ = ['ARP', 'IP', 'Ether', 'ICMP', 'UDP', 'DNS', 'DNSQR', 'DNSRR', 'IPv6', 'ICMPv6', 'NDPQuery', 'RandShort',
+           'send', 'sr', 'srp1', 'srp', 'conf', 'sniff', 'sendreceive']

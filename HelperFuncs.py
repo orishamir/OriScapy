@@ -2,9 +2,10 @@ import netifaces as _netifaces
 import struct as _struct
 import random as _random
 from re import findall as _findall
-import ipaddress
+from zlib import crc32
+import ipaddress as _ipaddress
 
-def checksum(packet):
+def chksum16bit(packet):
     total = 0
 
     # Add up 16-bit words
@@ -34,7 +35,7 @@ def ipv4ToBytes(ip: str):
     return _struct.pack("BBBB", *[int(bt) for bt in bts])
 
 def ipv6ToBytes(ip: str):
-    return ipaddress.IPv6Address(ip).packed
+    return _ipaddress.IPv6Address(ip).packed
 
 def bytesToIpv4(bts: bytes):
     assert len(bts) == 4, 'IPv4 should have 4 bytes'
@@ -86,11 +87,11 @@ def isSameSubnet(tstIp, ip, subnet):
     return int(addr2concatbits(tstIp), 2) & subnet == int(addr2concatbits(ip), 2) & subnet
 
 def isBroadCastAddr(tstIp, mask: int):
-    net = ipaddress.ip_network(f"{tstIp}/{str(mask).count('1')}")
+    net = _ipaddress.ip_network(f"{tstIp}/{str(mask).count('1')}")
     return tstIp == '255.255.255.255' or net.broadcast_address == tstIp
 
 def isMulticastAddr(tstIp: str):
-    return ipaddress.IPv4Address(tstIp).is_multicast
+    return _ipaddress.IPv4Address(tstIp).is_multicast
 
 def RandShort():
     return _random.randint(2000, 2**16-100)
