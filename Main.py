@@ -28,5 +28,6 @@ sniff(ismatch_mdns, onmatch_mdns)
 # send(pkt)
 # print(pkt.__bytes__())
 
-pkt = Ether(dst="ff:ff:ff:ff:ff:ff")/IPv6()/NDPQuery("::1")
-print(pkt.__bytes__())
+pkt = Ether()/IPv6()/NDPQuery("2a00:a040:18b:a22b:9a1e:19ff:fe7a:b324")
+send(pkt)
+# print(pkt.__bytes__())

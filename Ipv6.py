@@ -11,6 +11,8 @@ from HelperFuncs import *
 # https://datatracker.ietf.org/doc/html/rfc2460#section-3
 # https://en.wikipedia.org/wiki/IPv6_packet
 class IPv6(Layer):
+    _mac_dst_addr = "33:33:ff:7a:b3:24"
+
     version        = None  # Is 6
     traffic_class  = None  # Something with QoS?
     flow_label     = None

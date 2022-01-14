@@ -68,8 +68,9 @@ class Ether(Layer):
 
         if not hasattr(self, 'data'):
             self.data = b''
-
-        dataBytes = self.data.__bytes__()
+            dataBytes = b''
+        else:
+            dataBytes = self.data.__bytes__()
         if not isinstance(dataBytes, list):
             dataBytes = [dataBytes]
 
@@ -101,6 +102,11 @@ class Ether(Layer):
             else:
                 self.etherType = ProtocolTypes.IPv4
             if self.dst is None:
+                try:
+                    self.dst = self.data._mac_dst_addr
+                    return
+                except AttributeError:
+                    pass
                 # resolve ip to mac automatically
                 # send arp and receive automatically.
                 if IPv6 in self:
