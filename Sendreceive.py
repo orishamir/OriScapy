@@ -1,6 +1,6 @@
 import socket
 import struct
-from HelperFuncs import ProtocolTypes, bytesToMac, bytesToIpv4
+from HelperFuncs import ProtocolTypes, bytesToMac, bytesToIpv4, ProtocolTypesIP
 from Dns import DNS, DNSQR, DNSRR, QTYPES
 from Ethernet import Ether
 from Icmp import ICMP
@@ -65,11 +65,11 @@ def parseIP(data, pkt):
     # print(hex(version), hex(ihl), hex(tos), hex(total_len), hex(id), flags_fragoffset, ttl, prot, chksum, src, dst)
 
     pkt /= IP(src=src, dst=dst, ttl=ttl, protocol=prot, id=id)
-    if prot == IP.ProtocolTypesIP.ICMP:
+    if prot == ProtocolTypesIP.ICMP:
         # print("This is an ICMP packet")
         pkt = parseICMP(data, pkt)
         return pkt
-    elif prot == IP.ProtocolTypesIP.UDP:
+    elif prot == ProtocolTypesIP.UDP:
         # print("This is a UDP packet")
         pkt = parseUDP(data, pkt)
 
@@ -253,7 +253,7 @@ def _is_response(res, pkt, *, flipIP, flipMAC, flipPort):
         pktarp: ARP = pkt[ARP]
         return resarp.pdst == pktarp.psrc and resarp.opcode != pktarp.opcode
 
-def sendreceive(pkt: Ether, flipIP=True, flipMAC=False, flipPort=True, timeout=None):
+def sendreceive(pkt: Ether, flipIP=True, flipMAC=False, flipPort=True, timeout=5):
     send(pkt)
     st = time.time()
     while True:
@@ -266,7 +266,7 @@ def sendreceive(pkt: Ether, flipIP=True, flipMAC=False, flipPort=True, timeout=N
             continue
         if _is_response(res, pkt, flipIP=flipIP, flipMAC=flipMAC, flipPort=flipPort):
             return res
-        if timeout and time.time()-st > timeout:
+        if time.time()-st > timeout:
             raise TimeoutError("sendreceive() timed out when sending packet", repr(pkt), '\nHas timed out')
 
 def sniff(ismatch, onmatch, exitAfterFirstMatch=False, timeout=None):

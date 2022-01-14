@@ -115,10 +115,10 @@ class Ether(Layer):
                 dst_ip = self[IP].pdst
                 # If same subnet, use the direct PC's mac
                 mask = getSubnetmask(iface)
-                if isBroadCastAddr(dst_ip, mask):
-                    self.dst = "ff:ff:ff:ff:ff:ff"
-                elif isMulticastAddr(dst_ip):
+                if isMulticastAddr(dst_ip):
                     print("WARNING: dst MAC address not specified when sending multicast. Set automatically to broadcast")
+                    self.dst = "ff:ff:ff:ff:ff:ff"
+                elif isBroadCastAddr(dst_ip, mask):
                     self.dst = "ff:ff:ff:ff:ff:ff"
                 elif isSameSubnet(dst_ip, getIpAddr(iface), mask):
                     _resolve = Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(pdst=dst_ip)
