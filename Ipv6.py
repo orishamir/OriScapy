@@ -24,14 +24,15 @@ class IPv6(Layer):
 
     def __init__(self, psrc=None, pdst=None, protocol=None, traffic_class=None, flow_label=None, hoplimit=None, ttl=None):
         self.traffic_class = traffic_class
-        self.flow_label = flow_label
-        self.protocol = protocol
-        self.hoplimit = hoplimit or ttl
-        self.psrc = psrc
-        self.pdst = pdst
+        self.flow_label    = flow_label
+        self.protocol      = protocol
+        self.hoplimit      = hoplimit or ttl
+        self.psrc          = psrc
+        self.pdst          = pdst
 
     def __bytes__(self):
         self._autocomplete()
+
         if self.psrc is None:
             raise TypeError("Source IP not specified")
         if self.pdst is None:
@@ -80,9 +81,6 @@ class IPv6(Layer):
                 self.pdst = self.data._dst__addr
             except AttributeError:
                 pass
-            if NDPQuery in self:
-                q = self[NDPQuery]
-                self.pdst = q.target
 
         try:
             self.protocol = self.data._my__protocol

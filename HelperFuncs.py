@@ -114,6 +114,45 @@ class ProtocolTypesIP:
     OSPF       = 0x59
     IPv6_NoNxt = 0x3B
 
+class Icmpv6Types:
+    dst_unreachable = 1
+    time_exceeded = 3
+    req = 128
+    reply = 129
+    router_soli = 133
+    router_adv = 134
+    neighbor_soli = 135
+    neighbor_adv = 136
+    redirect_msg = 137
+
+icmpv4TypesAndCodes = {
+    0: 'echo_reply',
+    3: {
+        "name": 'dst_unreachable',
+        0: "Net Unreachable",
+        1: "Host Unreachable",
+        2: "Protocol Unreachable",
+        3: "Port Unreachable",
+        4: "Fragmentation Needed and Don't Fragment was Set",
+        5: "Source Route Failed",
+        6: "Destination Network Unknown",
+        7: "Destination Host Unknown",
+        8: "Source Host Isolated",
+        9: "Communication with Destination Network is Administratively Prohibited",
+        10: "Communication with Destination Host is Administratively Prohibited",
+        11: "Destination Network Unreachable for Type of Service",
+        12: "Destination Host Unreachable for Type of Service",
+        13: "Communication Administratively Prohibited",
+        14: "Host Precedence Violation",
+        15: "Precedence cutoff in effect",
+    },
+    11: {
+        'value': 'Time Exceeded',
+        0: 'Time to Live exceeded in Transit',
+        1: 'Fragment Reassembly Time Exceeded'
+    }
+}
+
 class AddressesType:
     _ipv6_broadcast = ""  # does not exist lol (there is multicast to all nodes tho)
     mac_broadcast = "ff:ff:ff:ff:ff:ff"
@@ -135,8 +174,8 @@ class Bidict(dict):
             if key.startswith("_"):
                 del self[key]
 
-        self.inverse = {}
         # make this a 1-liner?
+        self.inverse = {}
         for key, val in self.items():
             self.inverse[val] = key
 
