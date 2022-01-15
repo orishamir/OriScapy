@@ -78,7 +78,7 @@ class IPv6(Layer):
 
         if self.pdst is None:
             try:
-                self.pdst = self.data._dst__addr
+                self.pdst = self.data._ipdst__addr
             except AttributeError:
                 pass
 
