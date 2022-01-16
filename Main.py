@@ -28,5 +28,9 @@ sniff(ismatch_mdns, onmatch_mdns)
 # send(pkt)
 # print(pkt.__bytes__())
 
-pkt = Ether()/IPv6(pdst="::1")/NDPQuery("::1",withOption=True)
-print(pkt.__bytes__())
+# pkt = Ether()/IPv6(pdst="::1")/NDPResponse("::1", optionaddr="11:22:33:44:55:66")
+# print(pkt)
+
+pkt = Ether()/IP(dst="8.8.8.8")/UDP(dport=53)/DNS(qd=DNSQR(qname='google.com'))
+
+print(sendreceive(pkt))

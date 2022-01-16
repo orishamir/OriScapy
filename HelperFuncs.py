@@ -87,7 +87,8 @@ def isSameSubnet(tstIp, ip, subnet):
     return int(addr2concatbits(tstIp), 2) & subnet == int(addr2concatbits(ip), 2) & subnet
 
 def isBroadCastAddr(tstIp, mask: int):
-    net = _ipaddress.ip_network(f"{tstIp}/{str(mask).count('1')}")
+    return tstIp == '255.255.255.255'
+    net = _ipaddress.ip_network(f"{tstIp}/{mask.bit_count()}")
     return tstIp == '255.255.255.255' or net.broadcast_address == tstIp
 
 def isMulticastAddr(tstIp: str):
@@ -183,6 +184,13 @@ class Bidict(dict):
         if item in self.inverse:
             return self.inverse.__getitem__(item)
         return super(Bidict, self).__getitem__(item)
+
+    def get(self, key, default=None):
+        try:
+            return self[key]
+        except KeyError:
+            return default
+
 
     def __setitem__(self, key, value):
         super(Bidict, self).__setitem__(key, value)

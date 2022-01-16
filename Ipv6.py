@@ -86,3 +86,17 @@ class IPv6(Layer):
             self.protocol = self.data._my__protocol
         except AttributeError:
             self.protocol = ProtocolTypesIP.IPv6_NoNxt
+
+# https://datatracker.ietf.org/doc/html/rfc2460#section-4.2
+class ExtensionHeader:
+    type   = None  # First 2 bits specify the action that must be taken if the processing
+                   # IPv6 node does not recognize the Option Type:
+    length = None
+    data   = None
+
+    def __init__(self, type=None, length=None, data=None):
+        self.type = type
+        self.length = length
+        self.data = data
+
+        raise NotImplementedError
