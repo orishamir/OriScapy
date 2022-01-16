@@ -12,6 +12,19 @@ import struct
 # ARP parameters:
 # https://www.iana.org/assignments/arp-parameters/arp-parameters.xhtml
 
+class Opcodes:
+    Request = 0x1
+    Reply = 0x2
+OPCODES_DICT = Bidict(vars(Opcodes))
+
+class HardwareTypes:
+    # https://www.iana.org/assignments/arp-parameters/arp-parameters.xhtml#arp-parameters-2
+    Ethernet = 0x1
+    Dot11 = 0x6
+    FrameRelay = 0xf
+    HDLC = 0x11
+    Serial = 0x14  # PPP?
+HardwareTypes_dict = Bidict(vars(HardwareTypes))
 
 # ptype: ipv4
 # hwtype: ethernet
@@ -19,27 +32,11 @@ import struct
 
 # noinspection SpellCheckingInspection
 class ARP(Layer):
-    class Opcodes:
-        Request = 0x1
-        Reply   = 0x2
-
-    OPCODES_DICT = Bidict(vars(Opcodes))
-
-    class HardwareTypes:
-        # https://www.iana.org/assignments/arp-parameters/arp-parameters.xhtml#arp-parameters-2
-        Ethernet   = 0x1
-        Dot11      = 0x6
-        FrameRelay = 0xf
-        HDLC       = 0x11
-        Serial     = 0x14  # PPP?
-
-    HardwareTypes_dict = Bidict(vars(HardwareTypes))
-
-    hwtype =  HardwareTypes.Ethernet
-    ptype =  ProtocolTypes.IPv4
+    hwtype  =  HardwareTypes.Ethernet
+    ptype   =  ProtocolTypes.IPv4
     hardwareSize =  6
-    psize =  4
-    opcode       =  Opcodes.Request
+    psize   =  4
+    opcode  =  Opcodes.Request
     hwsrc   =  None
     psrc    =  None
     hwdst   =  None
@@ -81,11 +78,11 @@ class ARP(Layer):
             self.psrc = getIpAddr(conf.iface)
 
     def __str__(self):
-        self.opcode = self.OPCODES_DICT[self.opcode]
-        self.hwtype = self.HardwareTypes_dict[self.hwtype]
-        self.ptype = ProtocolTypes_dict[self.ptype]
+        self.opcode = OPCODES_DICT.get(self.opcode, None)
+        self.hwtype = HardwareTypes_dict.get(self.hwtype, None)
+        self.ptype = ProtocolTypes_dict.get(self.ptype, None)
         ret = super(ARP, self).__str__()
-        self.opcode = self.OPCODES_DICT[self.opcode]
-        self.hwtype = self.HardwareTypes_dict[self.hwtype]
-        self.ptype = ProtocolTypes_dict[self.ptype]
+        self.opcode = OPCODES_DICT.get(self.opcode, None)
+        self.hwtype = HardwareTypes_dict.get(self.hwtype, None)
+        self.ptype = ProtocolTypes_dict.get(self.ptype, None)
         return ret
