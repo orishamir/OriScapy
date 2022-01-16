@@ -177,7 +177,7 @@ def parseDNS(data):
     data = data[dnsLen:]
     if len(data) == 0:
         return DNS(rd=RD, ra=RA, id=id, rcode=rcode, opcode=opcode, qr=QR,
-                   qdcount=qdcount, ancount=ancount, nscount=nscount, arcount=arcount)
+                   qdcount=qdcount, ancount=ancount, nscount=nscount, arcount=arcount, aa=AA)
 
     qd = []
     an = []
@@ -210,7 +210,7 @@ def parseDNS(data):
 
     pkt = DNS(rd=RD, ra=RA, id=id, rcode=rcode, opcode=opcode, qr=QR,
                qdcount=qdcount, ancount=ancount, nscount=nscount, arcount=arcount,
-               qd=qd, an=an)
+               qd=qd, an=an, aa=AA)
     if data:
         pkt = pkt/Raw(load=data)
     return pkt
