@@ -1,11 +1,10 @@
-# https://www.iana.org/assignments/icmpv6-parameters/icmpv6-parameters.xhtml#icmpv6-parameters-5
-# https://datatracker.ietf.org/doc/html/rfc4861#section-4.6
 import struct
-
 import conf
 from HelperFuncs import ProtocolTypesIP, chksum16bit, Icmpv6Types, mac2bytes, getMacAddr, ipv6ToBytes
 from Icmpv6 import ICMPv6
-
+from abc import ABCMeta, abstractmethod
+# https://www.iana.org/assignments/icmpv6-parameters/icmpv6-parameters.xhtml#icmpv6-parameters-5
+# https://en.wikipedia.org/wiki/Neighbor_Discovery_Protocol
 
 class OptionTypes:
     source_link_addr = 1
@@ -14,23 +13,56 @@ class OptionTypes:
     redirect_header  = 4
     MTU              = 5
 
-class NDPOption:
+# https://datatracker.ietf.org/doc/html/rfc4861#section-4.6
+class NDPOption(metaclass=ABCMeta):
+    @abstractmethod
     def __init__(self, type=None, length=None):
         self.type = type
         self.length = length
 
+    @abstractmethod
     def __bytes__(self):
+        assert self.type is not None and self.length is not None
         return struct.pack("!BB", self.type, self.length)
 
-class NDPMTUOption(NDPOption):
-    def __init__(self, mtu=1500, ):
-        super(NDPMTUOption, self).__init__(type=OptionTypes.MTU, length=4)
+# https://datatracker.ietf.org/doc/html/rfc4861#section-4.6.4
+class NdpMTUOption(NDPOption):
+    def __init__(self, mtu=1500):
+        super(NdpMTUOption, self).__init__(type=OptionTypes.MTU, length=1)
+
+        self.mtu = mtu
 
     def __str__(self):
-        return f"MTUOption: type={self.type} length={self.length}"
+        return f"MTUOption: type={self.type} length={self.length} MTU={self.mtu}"
 
-class NDPSrcOption(NDPOption):
-    pass
+    def __bytes__(self):
+        pkt = super(NdpMTUOption, self).__bytes__()  # type and length
+        pkt += b'\x00'  # Reserved
+        pkt += struct.pack("!L", self.mtu)
+        return pkt
+
+# https://datatracker.ietf.org/doc/html/rfc4861#section-4.6.1
+class NdpLLAddrOption(NDPOption):
+    # Ndp link layer address option
+    def __init__(self, addr, issrc):
+        if issrc:
+            type_ = OptionTypes.source_link_addr
+        else:
+            type_ = OptionTypes.target_link_addr
+        super(NdpLLAddrOption, self).__init__(type=type_, length=1)
+
+        self.addr = addr
+
+    def __bytes__(self):
+        pkt = super(NdpLLAddrOption, self).__bytes__()
+        pkt += mac2bytes(self.addr)
+        return pkt
+
+    def __str__(self):
+        if self.type == OptionTypes.source_link_addr:
+            return f"NDPOptionSrc {self.addr}"
+        else:
+            return f"NDPOptionDst {self.addr}"
 
 # https://datatracker.ietf.org/doc/html/rfc4861#section-4.2
 class NDPRouterAdv(ICMPv6):

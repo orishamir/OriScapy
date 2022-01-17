@@ -1,7 +1,7 @@
 import struct
 import conf
 from Icmp import ICMP
-from Icmpv6 import NDPQuery, ICMPv6
+from Icmpv6 import ICMPv6
 from Layer import Layer
 from HelperFuncs import *
 

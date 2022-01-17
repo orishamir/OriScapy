@@ -1,7 +1,5 @@
 from All import *
-from Icmpv6 import NDPQuery, NDPRouterAdv
-from Ipv6 import IPv6
-
+from Ndp import NdpMTUOption
 """
 mDNS Poisoner:
 def ismatch_mdns(pkt: Ether):
@@ -30,4 +28,6 @@ sniff(ismatch_mdns, onmatch_mdns)
 
 # pkt = Ether()/IP(dst="8.8.8.8")/UDP(dport=53)/DNS(qd=DNSQR(qname='google.com'))
 #
+op = NdpMTUOption()
+print(bytes(op))
 # print(sendreceive(pkt))
