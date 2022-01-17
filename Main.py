@@ -1,5 +1,5 @@
 from All import *
-from Icmpv6 import NDPQuery
+from Icmpv6 import NDPQuery, NDPRouterAdv
 from Ipv6 import IPv6
 
 """
@@ -28,9 +28,6 @@ sniff(ismatch_mdns, onmatch_mdns)
 # send(pkt)
 # print(pkt.__bytes__())
 
-# pkt = Ether()/IPv6(pdst="::1")/NDPResponse("::1", optionaddr="11:22:33:44:55:66")
-# print(pkt)
-
-pkt = Ether()/IP(dst="8.8.8.8")/UDP(dport=53)/DNS(qd=DNSQR(qname='google.com'))
-
-print(sendreceive(pkt))
+# pkt = Ether()/IP(dst="8.8.8.8")/UDP(dport=53)/DNS(qd=DNSQR(qname='google.com'))
+#
+# print(sendreceive(pkt))
