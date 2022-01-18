@@ -97,6 +97,10 @@ def isMulticastAddr(tstIp: str):
 def RandShort():
     return _random.randint(2000, 2**16-100)
 
+def RandInt():
+    return _random.randint(4000, 2**32-100)
+
+
 class ProtocolTypes:
     # https://en.wikipedia.org/wiki/EtherType#Values
     IPv4    = 0x0800
@@ -115,6 +119,14 @@ class ProtocolTypesIP:
     OSPF       = 0x59
     IPv6_NoNxt = 0x3B
 
+    HOPOPT     = 0x00
+    IPv6_route = 0x2B
+    IPv6_frag  = 0x2C
+    dest_opt   = 0x3C
+
+
+
+# https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol_for_IPv6#Types
 class Icmpv6Types:
     dst_unreachable = 1
     time_exceeded = 3
@@ -190,7 +202,6 @@ class Bidict(dict):
             return self[key]
         except KeyError:
             return default
-
 
     def __setitem__(self, key, value):
         super(Bidict, self).__setitem__(key, value)

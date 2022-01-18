@@ -3,9 +3,10 @@ import conf
 from HelperFuncs import ProtocolTypesIP, chksum16bit, Icmpv6Types, mac2bytes, getMacAddr, ipv6ToBytes, Bidict
 from Icmpv6 import ICMPv6
 from abc import ABCMeta, abstractmethod
+
 # https://www.iana.org/assignments/icmpv6-parameters/icmpv6-parameters.xhtml#icmpv6-parameters-5
 # https://en.wikipedia.org/wiki/Neighbor_Discovery_Protocol
-
+# https://datatracker.ietf.org/doc/html/rfc4861
 class OptionTypes:
     source_link_addr = 1
     target_link_addr = 2
@@ -35,7 +36,6 @@ class NDPOption(metaclass=ABCMeta):
                 val = f"{val} ({OptionTypes_bidict[val]})"
             ret += f"    {attr:<8}= {val}\n"
         return ret
-
 
 # https://datatracker.ietf.org/doc/html/rfc4861#section-4.6.4
 class NdpMTUOption(NDPOption):
@@ -88,53 +88,11 @@ class NdpPrefixInfoOption(NDPOption):
 
 # https://datatracker.ietf.org/doc/html/rfc4861#section-4.2
 class NDPRouterAdv(ICMPv6):
-    _ipdst__addr = "fe80::1"  # Destination address for IPv6 header to use
-    options = []
-
-    hoplimit = 64
-    flagM    = False
-    flagO    = False
-    lifetime = 6000
-    reachabletime = 100000
-    retranstime   = 100000
-
-    def __init__(self, optionaddr=None, MTU=1500):
-        raise NotImplementedError
-        super(NDPRouterAdv, self).__init__(type=Icmpv6Types.router_adv, code=0)
-        if optionaddr is None:
-            print("Warning: NDP Query option address is None, setting to iface's mac addr")
-            optionaddr = mac2bytes(getMacAddr(conf.iface))
-        self.options = []
-        MTUoption = NDPOption(OptionTypes.MTU, 1, b'\x00' + struct.pack("!L", MTU))
-        # PrefixInfoOption = NDPOption(OptionTypes.prefix_info, 4, )
-        self.options.append(MTUoption)
-
-    def __len__(self):
-        return 1+1+2+1+1+2+4+4+len(self.options)
-
-    def toBytes(self, ipsrcbytes, ipdstbytes):
-        pkt = super(NDPRouterAdv, self).__bytes__()  # ICMPv6 type and code
-        pkt += b'\x00\x00'  # Checksum
-        pkt += struct.pack("!BBH", self.hoplimit, (self.flagM << 7) | (self.flagO << 6), self.lifetime)
-        pkt += struct.pack("!LL", self.reachabletime, self.retranstime)
-        for option in self.options:
-            pkt += bytes(option)  # Option
-
-        pseudoIpv6Header = b""
-        pseudoIpv6Header += ipsrcbytes
-        pseudoIpv6Header += ipdstbytes
-        pseudoIpv6Header += struct.pack("!H", len(self))
-        pseudoIpv6Header += b"\x00"
-        pseudoIpv6Header += struct.pack("!B", ProtocolTypesIP.ICMPv6)
-
-        tochecksum = pkt + pseudoIpv6Header
-
-        pkt = pkt[:2] + struct.pack("!H", chksum16bit(tochecksum)) + pkt[4:]
-        return pkt
+    pass
 
 # https://datatracker.ietf.org/doc/html/rfc4861#section-4.3
 class NDPQuery(ICMPv6):
-    _ipdst__addr = None  # Destination address for IPv6 header to use
+    """_ipdst__addr = None  # Destination address for IPv6 header to use
     option = b''
 
     def __init__(self, target_address: str, optionaddr=None, withOption=True):
@@ -167,11 +125,11 @@ class NDPQuery(ICMPv6):
         tochecksum = pkt + pseudoIpv6Header
 
         pkt = pkt[:2] + struct.pack("!H", chksum16bit(tochecksum)) + pkt[4:]
-        return pkt
+        return pkt"""
 
 # https://datatracker.ietf.org/doc/html/rfc4861#section-4.4
 class NDPResponse(ICMPv6):
-    _ipdst__addr = None  # Destination address for IPv6 header to use
+    """_ipdst__addr = None  # Destination address for IPv6 header to use
     option = b''
     def __init__(self, target: str, R=False, S=True, O=True, optionaddr=None):
         super(NDPResponse, self).__init__(type=Icmpv6Types.neighbor_adv, code=0)
@@ -204,4 +162,4 @@ class NDPResponse(ICMPv6):
         tochecksum = pkt + pseudoIpv6Header
 
         pkt = pkt[:2] + struct.pack("!H", chksum16bit(tochecksum)) + pkt[4:]
-        return pkt
+        return pkt"""

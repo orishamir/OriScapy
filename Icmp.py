@@ -1,10 +1,10 @@
 import struct
-# https://datatracker.ietf.org/doc/html/rfc792
 from Layer import Layer
 from HelperFuncs import *
 from HelperFuncs import RandShort
 
 # noinspection SpellCheckingInspection
+# https://datatracker.ietf.org/doc/html/rfc792
 class ICMP(Layer):
     _my__protocol = ProtocolTypesIP.ICMP
     # https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol#Control_messages

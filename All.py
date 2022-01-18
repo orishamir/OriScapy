@@ -8,8 +8,8 @@ from Udp import UDP
 from Ip import IP
 from Ipv6 import IPv6
 from Icmpv6 import ICMPv6
-# from Ndp import ND
 import conf as _conf
+# from Ndp import ND
 
 class MyMeta(type):
     def __setattr__(self, key, value):

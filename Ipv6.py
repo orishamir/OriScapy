@@ -4,7 +4,7 @@ from Icmp import ICMP
 from Icmpv6 import ICMPv6
 from Layer import Layer
 from HelperFuncs import *
-
+from abc import ABCMeta, abstractmethod
 # IPv6 Pseudo Header:
 # https://www.rfc-editor.org/rfc/rfc2460.html#section-8.1
 
@@ -17,15 +17,15 @@ class IPv6(Layer):
     traffic_class  = None  # Something with QoS?
     flow_label     = None
     payload_length = None  # Just data len
-    protocol       = None  # RFC calls this "Next Header"...
+    nextheader      = None  # AKA "protocol" field in ipv4
     hoplimit       = None  # Literally the same as TTL
     psrc           = None
     pdst           = None
 
-    def __init__(self, psrc=None, pdst=None, protocol=None, traffic_class=None, flow_label=None, hoplimit=None, ttl=None):
+    def __init__(self, psrc=None, pdst=None, nextheader=None, traffic_class=None, flow_label=None, hoplimit=None, ttl=None):
         self.traffic_class = traffic_class
         self.flow_label    = flow_label
-        self.protocol      = protocol
+        self.nextheader    = nextheader
         self.hoplimit      = hoplimit or ttl
         self.psrc          = psrc
         self.pdst          = pdst
@@ -44,7 +44,7 @@ class IPv6(Layer):
         first_2_bytes = (self.version << 28) | (self.traffic_class << 20) | self.flow_label
         pkt += struct.pack("!L", first_2_bytes)
         pkt += struct.pack('!H', self.payload_length)
-        pkt += struct.pack('!BB', self.protocol, self.hoplimit)
+        pkt += struct.pack('!BB', self.nextheader, self.hoplimit)
         pkt += srcbytes
         pkt += dstbytes
         if hasattr(self, 'data'):
@@ -83,20 +83,79 @@ class IPv6(Layer):
                 pass
 
         try:
-            self.protocol = self.data._my__protocol
+            self.nextheader = self.data._my__protocol
         except AttributeError:
-            self.protocol = ProtocolTypesIP.IPv6_NoNxt
+            self.nextheader = ProtocolTypesIP.IPv6_NoNxt
 
 # https://datatracker.ietf.org/doc/html/rfc2460#section-4.2
-class ExtensionHeader:
-    type   = None  # First 2 bits specify the action that must be taken if the processing
-                   # IPv6 node does not recognize the Option Type:
-    length = None
-    data   = None
+class ExtensionHeader(metaclass=ABCMeta):
+    pass
+    """_my__protocol = None
+    nexthdr    = None
+    optdatalen = None
 
-    def __init__(self, type=None, length=None, data=None):
-        self.type = type
-        self.length = length
-        self.data = data
+    @abstractmethod
+    def __init__(self, nexthdr=None, optdatalen=None):
+        self.nexthdr = nexthdr
+        self.optdatalen = optdatalen
 
-        raise NotImplementedError
+    @abstractmethod
+    def __bytes__(self):
+        return struct.pack("!BB", self.nexthdr, self.optdatalen)
+
+    def __len__(self):
+        return 1+1+self.optdatalen"""
+
+class HopByHopExtHdr(ExtensionHeader):
+    def __init__(self):
+        super(HopByHopExtHdr, self).__init__()
+
+# https://datatracker.ietf.org/doc/html/rfc2460#section-4.5
+class FragExtHdr(ExtensionHeader, Layer):
+    _my__protocol = ProtocolTypesIP.IPv6_frag
+    data = b''
+
+    def __init__(self, frag_offset=None, res=None, flagM=None, id_=None):
+        # length is 0 because of fixed size, so reserved.
+        super(FragExtHdr, self).__init__()
+
+        self.frag_offset = frag_offset
+        self.res         = res
+        self.flagM       = flagM
+        self.id_         = id_
+
+    def __bytes__(self):
+        self._autocomplete()
+        pkt = struct.pack("!B", self.nextheader)
+        pkt += b'\x00'
+        pkt += struct.pack("!H", (self.frag_offset << 3) | (self.res << 1) | self.flagM)
+        pkt += struct.pack("!L", self.id_)
+        pkt += bytes(self.data)
+        return pkt
+
+    def __len__(self):
+        return 1+1+2+4+len(self.data)
+
+    def _autocomplete(self):
+        if self.id_ is None:
+            self.id_ = RandInt()
+
+        if self.flagM is None:
+            self.flagM = False
+
+        if self.frag_offset is None:
+            self.frag_offset = 0x0
+
+        if self.res is None:
+            # reserved 2 bits
+            self.res = 0
+
+        if self.data == b'':
+            self.nextheader = ProtocolTypesIP.IPv6_NoNxt
+            return
+        try:
+            self.nextheader = self.data._my__protocol
+        except AttributeError:
+            pass
+
+

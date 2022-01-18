@@ -1,5 +1,5 @@
 from All import *
-from Ndp import NdpMTUOption, NdpLLAddrOption
+from Ipv6 import FragExtHdr
 """
 mDNS Poisoner:
 def ismatch_mdns(pkt: Ether):
@@ -28,6 +28,6 @@ sniff(ismatch_mdns, onmatch_mdns)
 
 # pkt = Ether()/IP(dst="8.8.8.8")/UDP(dport=53)/DNS(qd=DNSQR(qname='google.com'))
 #
-op = NdpLLAddrOption(False, "aa:bb:cc:dd:ee:ff")
-print(op)
+pkt = Ether()/IPv6(pdst="::1")/FragExtHdr()/ICMP()
+print(pkt.__bytes__())
 # print(sendreceive(pkt))

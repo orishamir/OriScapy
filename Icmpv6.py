@@ -7,7 +7,6 @@ from abc import ABCMeta, abstractmethod
 
 class ICMPv6(Layer, metaclass=ABCMeta):
     _my__protocol = ProtocolTypesIP.ICMPv6
-    # https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol_for_IPv6#Types
 
     type   = None
     code   = None
@@ -24,4 +23,3 @@ class ICMPv6(Layer, metaclass=ABCMeta):
     def __bytes__(self):
         pkt = struct.pack("!BB", self.type, self.code)
         return pkt
-
