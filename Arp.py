@@ -32,6 +32,9 @@ HardwareTypes_dict = Bidict(vars(HardwareTypes))
 
 # noinspection SpellCheckingInspection
 class ARP(Layer):
+    _my__protocol = ProtocolTypes.ARP
+    _mac_dst_addr = "ff:ff:ff:ff:ff:ff"
+
     hwtype  =  HardwareTypes.Ethernet
     ptype   =  ProtocolTypes.IPv4
     hardwareSize =  6

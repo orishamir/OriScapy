@@ -13,6 +13,7 @@ import struct
 
 # noinspection SpellCheckingInspection
 class IP(Layer):
+    _my__protocol = ProtocolTypes.IPv4
     ProtocolTypesIP_dict = Bidict(vars(ProtocolTypesIP))
 
     class Flags:

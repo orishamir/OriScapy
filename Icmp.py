@@ -41,9 +41,7 @@ class ICMP(Layer):
     def __bytes__(self):
         self._autocomplete()
 
-        # if not hasattr()
-
-        pkt = struct.pack('>BBHHH', self.type, self.code, 0, self.id, self.seq)
+        pkt = struct.pack('!BBHHH', self.type, self.code, 0, self.id, self.seq)
         self.checksum = chksum16bit(pkt + self.data)
         pkt = pkt[:1+1] + struct.pack('>H', self.checksum) + pkt[1+1+2:]
         pkt += self.data
@@ -66,3 +64,7 @@ class ICMP(Layer):
         ret = super(ICMP, self).__str__()
         self.type = self.TypesICMP_dict.get(self.type, None)
         return ret
+
+    def __len(self):
+        # Is this true tho?
+        return 1+1+2+4+len(self.data)

@@ -14,6 +14,8 @@ class OptionTypes:
     redirect_header  = 4
     MTU              = 5
 
+    DNSServer        = 25
+
 OptionTypes_bidict = Bidict(vars(OptionTypes))
 
 # https://datatracker.ietf.org/doc/html/rfc4861#section-4.6
@@ -68,7 +70,7 @@ class NdpLLAddrOption(NDPOption):
 
 # https://datatracker.ietf.org/doc/html/rfc4861#section-4.6.2
 class NdpPrefixInfoOption(NDPOption):
-    def __init__(self, prefixlen=None, flagL=None, flagA=None, validlifetime=None, preflifetime=None, prefix=None):
+    def __init__(self, prefixlen, flagL, flagA, validlifetime, preflifetime, prefix):
         super(NdpPrefixInfoOption, self).__init__(type=OptionTypes.prefix_info, length=4)
 
         self.prefixlen = prefixlen
@@ -84,6 +86,23 @@ class NdpPrefixInfoOption(NDPOption):
         pkt += struct.pack("!LL", self.validlifetime, self.preflifetime)
         pkt += '\x00'*4
         pkt += self.prefix
+        return pkt
+
+# https://datatracker.ietf.org/doc/html/rfc8106
+class NdpDnsOption(NDPOption):
+    def __init__(self, lifetime, addresses):
+        super(NdpDnsOption, self).__init__(type=OptionTypes.DNSServer, length=(2+2+4+len(addresses)*16)/8)
+        self.lifetime = lifetime
+        self.addresses = addresses
+
+    def __bytes__(self):
+        pkt = super(NdpDnsOption, self).__bytes__()  # type and length
+        pkt += b'\x00'  # reserved
+        pkt += struct.pack("!L", self.lifetime)
+        for ip in self.addresses:
+            if not isinstance(ip, bytes):
+                ip = ipv6ToBytes(ip)
+            pkt += ip
         return pkt
 
 # https://datatracker.ietf.org/doc/html/rfc4861#section-4.2

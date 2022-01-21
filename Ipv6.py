@@ -11,6 +11,7 @@ from abc import ABCMeta, abstractmethod
 # https://datatracker.ietf.org/doc/html/rfc2460#section-3
 # https://en.wikipedia.org/wiki/IPv6_packet
 class IPv6(Layer):
+    _my__protocl = ProtocolTypes.IPv6
     _mac_dst_addr = "33:33:ff:7a:b3:24"
 
     version        = None  # Is 6
@@ -89,22 +90,9 @@ class IPv6(Layer):
 
 # https://datatracker.ietf.org/doc/html/rfc2460#section-4.2
 class ExtensionHeader(metaclass=ABCMeta):
-    pass
-    """_my__protocol = None
-    nexthdr    = None
-    optdatalen = None
-
-    @abstractmethod
-    def __init__(self, nexthdr=None, optdatalen=None):
-        self.nexthdr = nexthdr
-        self.optdatalen = optdatalen
-
-    @abstractmethod
-    def __bytes__(self):
-        return struct.pack("!BB", self.nexthdr, self.optdatalen)
-
-    def __len__(self):
-        return 1+1+self.optdatalen"""
+    """
+    Abstract Base Class for IPv6 Extension Header
+    """
 
 class HopByHopExtHdr(ExtensionHeader):
     def __init__(self):
@@ -157,5 +145,3 @@ class FragExtHdr(ExtensionHeader, Layer):
             self.nextheader = self.data._my__protocol
         except AttributeError:
             pass
-
-

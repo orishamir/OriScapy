@@ -41,7 +41,7 @@ class Ether(Layer):
 
     checksum = None
 
-    def __init__(self, *, dst=None, src=None, ethType=ProtocolTypes.default):
+    def __init__(self, *, dst=None, src=None, ethType=None):
         self.dst = dst
         self.src = src
         self.etherType = ethType
@@ -91,22 +91,25 @@ class Ether(Layer):
         if not hasattr(self, 'data'):
             return
         # Determine self.etherType based on data
-        if isinstance(self.data, ARP):
-            self.etherType = ProtocolTypes.ARP
-            if self.dst is None:
-                self.dst = AddressesType.mac_broadcast
+        if self.etherType is None:
+            try:
+                self.etherType = self.data._my__protocol
+            except AttributeError:
+                pass
+        if self.dst is None:
+            try:
+                self.dst = self.data._mac_dst_addr
+            except AttributeError:
+                pass
+        # if self.etherType == ProtocolTypes.IPv4:
+        #     pass
 
-        elif isinstance(self.data, IP | IPv6):
-            if isinstance(self.data, IPv6):
-                self.etherType = ProtocolTypes.IPv6
-            else:
-                self.etherType = ProtocolTypes.IPv4
+        if isinstance(self.data, IP | IPv6):
+            # if isinstance(self.data, IPv6):
+            #     self.etherType = ProtocolTypes.IPv6
+            # else:
+            #     self.etherType = ProtocolTypes.IPv4
             if self.dst is None:
-                try:
-                    self.dst = self.data._mac_dst_addr
-                    return
-                except AttributeError:
-                    pass
                 # resolve ip to mac automatically
                 # send arp and receive automatically.
                 if IPv6 in self:
@@ -126,10 +129,11 @@ class Ether(Layer):
                 else:
                     # else send to router
                     _resolve = Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(pdst=getDefaultGateway(iface))
+                    # print(_resolve.etherType)
                     self.dst = Sendreceive.sendreceive(_resolve, timeout=10)[ARP].hwsrc
 
     def __str__(self):
-        self.etherType = ProtocolTypes_dict[self.etherType]
+        self.etherType = ProtocolTypes_dict.get(self.etherType, None)
         ret = super(Ether, self).__str__()
-        self.etherType = ProtocolTypes_dict[self.etherType]
+        self.etherType = ProtocolTypes_dict.get(self.etherType, None)
         return ret
