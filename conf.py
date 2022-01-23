@@ -1,1 +1,1 @@
-iface = 'eth0'
+iface = 'wlan0'
