@@ -72,7 +72,10 @@ class IPv6(Layer):
                 self.payload_length = 0
 
         if self.hoplimit is None:
-            self.hoplimit = 64
+            try:
+                self.hoplimit = self.data._hoplimit
+            except AttributeError:
+                self.hoplimit = 64
 
         if self.psrc is None:
             self.psrc = getIpV6Addr(conf.iface)

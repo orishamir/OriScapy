@@ -116,6 +116,7 @@ class NdpDnsOption(NDPOption):
 
 # https://datatracker.ietf.org/doc/html/rfc4861#section-4.2
 class NDPRouterAdv(ICMPv6):
+    _hoplimit = 255
     options = []
 
     def __init__(self, lladdr, prefix, curhoplimit=64, flagM=False, flagO=False, lifetime=None, reachabletime=None,
@@ -159,10 +160,13 @@ class NDPRouterAdv(ICMPv6):
     def _autocomplete(self):
         if self.lifetime is None:
             self.lifetime = 100
+
         if self.reachabletime is None:
             self.reachabletime = 10000
+
         if self.retranstime is None:
             self.retranstime = 10000
+
         if not self.options:
             # generate options automatically
             options = []
@@ -177,6 +181,7 @@ class NDPRouterAdv(ICMPv6):
 
 # https://datatracker.ietf.org/doc/html/rfc4861#section-4.3
 class NDPQuery(ICMPv6):
+    _hoplimit = 255
     """_ipdst__addr = None  # Destination address for IPv6 header to use
     option = b''
 
