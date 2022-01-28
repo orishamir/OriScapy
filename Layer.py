@@ -1,8 +1,9 @@
+from abc import ABCMeta, abstractmethod
 from colorama import init, Fore, Style
 RST = Style.RESET_ALL
 init()
 
-class Layer:
+class Layer(metaclass=ABCMeta):
     def __truediv__(self, other):
         if hasattr(self, 'data'):
             self.data = self.data / other

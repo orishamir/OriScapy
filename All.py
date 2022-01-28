@@ -9,7 +9,7 @@ from Ip import IP
 from Ipv6 import IPv6
 from Icmpv6 import ICMPv6
 import conf as _conf
-# from Ndp import ND
+from Ndp import NdpPrefixInfoOption, NdpLLAddrOption, NdpMTUOption, NdpDnsOption, NDPRouterAdv
 
 class MyMeta(type):
     def __setattr__(self, key, value):
@@ -25,5 +25,6 @@ class conf(metaclass=MyMeta):
     pass
 
 srp1 = srp = sr = sendreceive
-__all__ = ['ARP', 'IP', 'Ether', 'ICMP', 'UDP', 'DNS', 'DNSQR', 'DNSRR', 'IPv6', 'ICMPv6',# 'NDPQuery', 'NDPResponse',
+__all__ = ['ARP', 'IP', 'Ether', 'ICMP', 'UDP', 'DNS', 'DNSQR', 'DNSRR', 'IPv6', 'ICMPv6',
+           'NDPRouterAdv', 'NdpDnsOption', 'NdpLLAddrOption', 'NdpMTUOption', 'NdpPrefixInfoOption',
            'RandShort', 'send', 'sr', 'srp1', 'srp', 'conf', 'sniff', 'sendreceive']

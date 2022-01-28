@@ -35,6 +35,12 @@ class ICMPv6(Layer, metaclass=ABCMeta):
         pseudoIpv6Header += struct.pack("!B", ProtocolTypesIP.ICMPv6)
         return pseudoIpv6Header
 
+    @abstractmethod
+    def toBytes(self, srcipbytes, dstipbytes):
+        # toBytes method takes src and dst ip because
+        # ICMPv6 uses these in the checksum (ipv6 pseudo header)
+        pass
+
 class ICMPv6DstUnreach(ICMPv6):
     _my__protocol = ProtocolTypesIP.ICMPv6
     data = b''

