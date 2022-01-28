@@ -1,5 +1,5 @@
 from All import *
-from Ipv6 import FragExtHdr
+from Icmpv6 import ICMPv6DstUnreach
 """
 mDNS Poisoner:
 def ismatch_mdns(pkt: Ether):
@@ -26,5 +26,6 @@ sniff(ismatch_mdns, onmatch_mdns)
 # send(pkt)
 # print(pkt.__bytes__())
 
-pkt = Ether()/IP(dst="8.8.8.8")/UDP(dport=53)/DNS(qd=DNSQR(qname='google.com'))
-print(sendreceive(pkt))
+pkt = Ether()/IPv6(pdst="::1")/ICMPv6DstUnreach(code=1)/"asd"
+print(pkt)
+print(pkt.__bytes__())
