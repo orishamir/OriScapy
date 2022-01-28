@@ -28,4 +28,4 @@ sniff(ismatch_mdns, onmatch_mdns)
 
 pkt = Ether()/IPv6(pdst="::1")/ICMPv6DstUnreach(code=1)/"asd"
 print(pkt)
-print(pkt.__bytes__())
+sendreceive(pkt)
