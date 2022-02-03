@@ -38,7 +38,7 @@ class Ether(Layer):
     dst = None
     src = None
     etherType = None
-
+    data = b''
     checksum = None
 
     def __init__(self, *, dst=None, src=None, ethType=None):
@@ -137,3 +137,6 @@ class Ether(Layer):
         ret = super(Ether, self).__str__()
         self.etherType = ProtocolTypes_dict.get(self.etherType, None)
         return ret
+
+    def __len__(self):
+        return 6+6+2+len(self.data)

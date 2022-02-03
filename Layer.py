@@ -26,19 +26,31 @@ class Layer(metaclass=ABCMeta):
         for key, val in all_attr.items():
             if key == 'data':
                 continue
-            if 'port' not in key and key != 'ttl' and key not in ['qd', 'an', 'ns', 'ar'] and val not in [0,1] and isinstance(val, int):
+            if key in ("lladdr", ):
+                continue
+
+            if 'port' not in key and key != 'ttl' and key not in ['qd', 'an', 'ns', 'ar'] and val not in (0,1) and isinstance(val, int):
                 val = hex(val)
+
             if key in ('qd', 'an') and val:
                 ret += f"       {Fore.MAGENTA}{key}{RST}="
                 for dnsr in val:
                     dnsr = f'\n{" "*12}'.join(str(dnsr).split('\n'))
                     ret += f"       {Fore.LIGHTGREEN_EX} {dnsr}{RST}\n"
+            elif key == '_options':
+                ret += f"       {Fore.MAGENTA}options{RST}="
             else:
                 ret += f"       {Fore.MAGENTA}{key:<15} {RST}={Fore.LIGHTGREEN_EX} {val}{RST}\n"
 
-        if hasattr(self, 'data') and not isinstance(self.data, bytes) and self.data is not None:
+        if (hasattr(self, 'data') and not isinstance(self.data, bytes) and self.data is not None) or (hasattr(self, '_options') and self._options):
             ret += '\n'
-            s = str(self.data)
+            if hasattr(self, 'data'):
+                s = str(self.data)
+            elif hasattr(self, '_options'):
+                s = ''
+                for opt in self._options:
+                    s += f"{opt}\n"
+
             s = [f"    {i}" for i in s.splitlines()]
             ret += '\n    '.join(s)
         return ret
@@ -72,11 +84,14 @@ class Layer(metaclass=ABCMeta):
             raise AttributeError(f"No attribute {name}")
         return getattr(self.data, name)
 
+    @abstractmethod
+    def __len__(self):
+        # return len(bytes(self))
+        pass
+
     def _autocomplete(self):
         pass
 
-    def __len__(self):
-        return len(bytes(self))
 
     def __bytes__(self):
         return

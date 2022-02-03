@@ -41,6 +41,9 @@ def bytesToIpv4(bts: bytes):
     assert len(bts) == 4, 'IPv4 should have 4 bytes'
     return '.'.join(map(str, bts))
 
+def bytesToIpv6(bts: bytes):
+    return _ipaddress.IPv6Address(bts).compressed
+
 def bytesToMac(bts: bytes):
     assert len(bts) == 6, 'MAC Address should be 6 bytes'
     return ':'.join(hex(x)[2:].zfill(2) for x in bts)
@@ -65,13 +68,13 @@ def getMacAddr(iface):
 def getIpAddr(iface):
     return _netifaces.ifaddresses(iface)[_netifaces.AF_INET][0]['addr']
 
-def getIpV6Addr(iface):
+def getIpv6Addr(iface):
     return _netifaces.ifaddresses(iface)[_netifaces.AF_INET6][0]['addr']
 
 def addr2concatbits(addr):
     return ''.join(bin(i)[2:].zfill(8) for i in _struct.pack('BBBB', *map(int, addr.split('.'))))
 
-def getSubnetmask(iface):
+def getSubnetmask(iface: int):
     mask = _netifaces.ifaddresses(iface)[_netifaces.AF_INET][0]['netmask']
     maskBits = addr2concatbits(mask)
     return int(maskBits, 2)
@@ -91,6 +94,19 @@ def isBroadCastAddr(tstIp, mask: int):
     net = _ipaddress.ip_network(f"{tstIp}/{mask.bit_count()}")
     return tstIp == '255.255.255.255' or net.broadcast_address == tstIp
 
+# create function to create random mac address
+def randomMac():
+    mac = [0x00, 0x16, 0x3e,
+           _random.randint(0x00, 0x7f),
+           _random.randint(0x00, 0xff),
+           _random.randint(0x00, 0xff)]
+    return ':'.join(map(lambda x: '%02x' % x, mac))
+
+# create function to create random ipv4 address
+def randomIpv4():
+    ip = [_random.randint(0, 255) for i in range(4)]
+    return '.'.join(map(str, ip))
+
 def isMulticastAddr(tstIp: str):
     return _ipaddress.IPv4Address(tstIp).is_multicast
 
@@ -100,13 +116,13 @@ def RandShort():
 def RandInt():
     return _random.randint(4000, 2**32-100)
 
-
 class ProtocolTypes:
     # https://en.wikipedia.org/wiki/EtherType#Values
     IPv4    = 0x0800
     IPv6    = 0x86dd
     ARP     = 0x0806
     default = 0x9000
+    LLDP    = 0x88CC
 
 # IPv4 protocol nums: https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers
 class ProtocolTypesIP:
@@ -124,14 +140,12 @@ class ProtocolTypesIP:
     IPv6_frag  = 0x2C
     dest_opt   = 0x3C
 
-
-
 # https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol_for_IPv6#Types
 class Icmpv6Types:
     dst_unreachable = 1
     time_exceeded = 3
-    req = 128
-    reply = 129
+    echo_request = 128
+    echo_reply = 129
     router_soli = 133
     router_adv = 134
     neighbor_soli = 135

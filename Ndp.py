@@ -3,10 +3,12 @@ import conf
 from HelperFuncs import ProtocolTypesIP, chksum16bit, Icmpv6Types, mac2bytes, getMacAddr, ipv6ToBytes, Bidict
 from Icmpv6 import ICMPv6
 from abc import ABCMeta, abstractmethod
+from Layer import Layer
 
 # https://www.iana.org/assignments/icmpv6-parameters/icmpv6-parameters.xhtml#icmpv6-parameters-5
 # https://en.wikipedia.org/wiki/Neighbor_Discovery_Protocol
 # https://datatracker.ietf.org/doc/html/rfc4861
+
 class OptionTypes:
     source_link_addr = 1
     target_link_addr = 2
@@ -19,7 +21,7 @@ class OptionTypes:
 OptionTypes_bidict = Bidict(vars(OptionTypes))
 
 # https://datatracker.ietf.org/doc/html/rfc4861#section-4.6
-class NDPOption(metaclass=ABCMeta):
+class NDPOption(Layer, metaclass=ABCMeta):
     @abstractmethod
     def __init__(self, type=None, length=None):
         self.type = type
@@ -29,15 +31,6 @@ class NDPOption(metaclass=ABCMeta):
     def __bytes__(self):
         assert self.type is not None and self.length is not None
         return struct.pack("!BB", self.type, self.length)
-
-    def __str__(self):
-        ret = "NDP Option:\n"
-        for attr, val in self.__dict__.items():
-            if attr == 'type':
-                # convert type to human description
-                val = f"{val} ({OptionTypes_bidict[val]})"
-            ret += f"    {attr:<8}= {val}\n"
-        return ret
 
 # https://datatracker.ietf.org/doc/html/rfc4861#section-4.6.4
 class NdpMTUOption(NDPOption):
@@ -114,10 +107,13 @@ class NdpDnsOption(NDPOption):
             pkt += ip
         return pkt
 
+    def __len__(self):
+        return 1+1+2+4+len(self.addresses)*16
+
 # https://datatracker.ietf.org/doc/html/rfc4861#section-4.2
 class NDPRouterAdv(ICMPv6):
     _hoplimit = 255
-    options = []
+    _options = []
 
     def __init__(self, lladdr, prefix, curhoplimit=64, flagM=False, flagO=False, lifetime=None, reachabletime=None,
                  retranstime=None, options=None):
@@ -134,23 +130,25 @@ class NDPRouterAdv(ICMPv6):
         self.reachabletime = reachabletime
         self.retranstime = retranstime
         if options is None:
-            self.options = []
+            self._options = []
         else:
-            self.options = options
+            self._options = options
 
         self._autocomplete()
 
     def __len__(self):
-        return 1+1+2+1+1+2+4+4+sum(len(op) for op in self.options)
+        return 1+1+2+1+1+2+4+4+sum(len(op) for op in self._options)
 
     def toBytes(self, srcipbytes, dstipbytes):
         self._autocomplete()
 
         pkt = super(NDPRouterAdv, self).__bytes__()  # type and code
         pkt += b'\x00\x00'  # checksum
-        pkt += struct.pack("!BBH", self.curhoplimit, (self.flagM << 7) | (self.flagO << 6) | (self.flagH << 5) | (self.flagPrf << 3) | (self.flagProx << 1), self.lifetime)
+        pkt += struct.pack("!BBH", self.curhoplimit, (self.flagM << 7) | (self.flagO << 6) | (self.flagH << 5)
+                           | (self.flagPrf << 3) | (self.flagProx << 1),
+                           self.lifetime)
         pkt += struct.pack("!LL", self.reachabletime, self.retranstime)
-        for option in self.options:
+        for option in self._options:
             pkt += bytes(option)
 
         tochecksum = pkt + self._get_pseudo_header(srcipbytes, dstipbytes)
@@ -167,7 +165,7 @@ class NDPRouterAdv(ICMPv6):
         if self.retranstime is None:
             self.retranstime = 10000
 
-        if not self.options:
+        if not self._options:
             # generate options automatically
             options = []
             mtuoption = NdpMTUOption()
@@ -177,7 +175,35 @@ class NDPRouterAdv(ICMPv6):
             options.append(mtuoption)
             options.append(prefixinfo)
             options.append(sourcell)
-            self.options = options
+            self._options = options
+
+# https://datatracker.ietf.org/doc/html/rfc4861#section-4.1
+class NDPRouterSol(ICMPv6):
+    _hoplimit = 255
+    _options = []
+
+    def __init__(self, lladdr=None):
+        super(NDPRouterSol, self).__init__(type=Icmpv6Types.router_soli, code=0)
+        if lladdr is None:
+            lladdr = getMacAddr(conf.iface)
+
+        self.lladdr = lladdr
+        self._options = []
+        self._options.append(NdpLLAddrOption(issrc=True, addr=self.lladdr))
+
+    def __len__(self):
+        return 1+1+2+4+sum(len(op) for op in self._options)
+
+    def toBytes(self, srcipbytes, dstipbytes):
+        pkt = super(NDPRouterSol, self).__bytes__()  # type and code
+        pkt += b'\x00\x00'  # checksum
+        pkt += b'\x00'*4  # reserved
+        for option in self._options:
+            pkt += bytes(option)
+
+        tochecksum = pkt + self._get_pseudo_header(srcipbytes, dstipbytes)
+        pkt = pkt[:2] + struct.pack("!H", chksum16bit(tochecksum)) + pkt[4:]
+        return pkt
 
 # https://datatracker.ietf.org/doc/html/rfc4861#section-4.3
 class NDPQuery(ICMPv6):

