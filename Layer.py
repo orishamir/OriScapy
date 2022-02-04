@@ -84,14 +84,11 @@ class Layer(metaclass=ABCMeta):
             raise AttributeError(f"No attribute {name}")
         return getattr(self.data, name)
 
-    @abstractmethod
     def __len__(self):
-        # return len(bytes(self))
-        pass
+        return len(bytes(self))
 
     def _autocomplete(self):
         pass
-
 
     def __bytes__(self):
         return

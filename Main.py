@@ -23,6 +23,13 @@ def onmatch_mdns(pkt: Ether):
 sniff(ismatch_mdns, onmatch_mdns)
 """
 
-pkt = Ether()/IPv6(pdst="ff02::1")/NDPRouterSol()
-print(pkt)
-print(pkt.__bytes__())
+# Resolve google.com by querying google's DNS server (8.8.8.8)
+pkt = Ether() / IP(dst="224.0.0.251") / UDP(dport=5353) / DNS(qd=DNSQR(qname="oripc.local"))
+
+# IP may come back either to the multicast address, or directly to the host PC's IP.
+# Which means that you can't tell whether a packet is an answer to `pkt` based on
+# the dst and src IP inside it, so we set flipIP to False
+ans = sendreceive(pkt, flipIP=False)
+
+for answer_record in ans.an:
+    print(answer_record.rdata)

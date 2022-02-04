@@ -144,7 +144,7 @@ class DNS(Layer):
         self.nscount = nscount
         self.arcount = arcount
 
-        if qd and not isinstance(qd, list):
+        if qd is not None and not isinstance(qd, list):
             qd = [qd]
         if an and not isinstance(an, list):
             an = [an]
