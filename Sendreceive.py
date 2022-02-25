@@ -1,9 +1,10 @@
 import socket
 import struct
-from HelperFuncs import ProtocolTypes, bytesToMac, bytesToIpv4, ProtocolTypesIP
+from HelperFuncs import ProtocolTypes, bytesToMac, bytesToIpv4, ProtocolTypesIP, bytesToIpv6
 from Dns import DNS, DNSQR, DNSRR, QTYPES
 from Ethernet import Ether
 from Icmp import ICMP
+from Ipv6 import IPv6
 from Raw import Raw
 from Arp import ARP
 from Udp import UDP
@@ -64,7 +65,7 @@ def parseIP(data, pkt):
     # print(data)
     # print(hex(version), hex(ihl), hex(tos), hex(total_len), hex(id), flags_fragoffset, ttl, prot, chksum, src, dst)
 
-    pkt /= IP(src=src, dst=dst, ttl=ttl, protocol=prot, id=id)
+    pkt /= IP(psrc=src, pdst=dst, ttl=ttl, protocol=prot, id=id)
     if prot == ProtocolTypesIP.ICMP:
         # print("This is an ICMP packet")
         pkt = parseICMP(data, pkt)
@@ -85,9 +86,27 @@ def parseIP(data, pkt):
     return pkt
 
 def parseIPv6(data, pkt):
-    pass
+    version_trafficClass_flowLabel, payload_len, next_header, hoplimit, src, dst= struct.unpack("!LHBB 16s 16s", data[:40])
+
+    version = version_trafficClass_flowLabel >> 28
+
+    traffic_class = (version_trafficClass_flowLabel >> 20) & 0xFF
+    flow_label = version_trafficClass_flowLabel & 0xFFFFF
+
+    # print(src)
+    pkt /= IPv6(psrc=bytesToIpv6(src), pdst=bytesToIpv6(dst), ttl=hoplimit, traffic_class=traffic_class,
+                flow_label=flow_label, nextheader=next_header)
+
+    if next_header == ProtocolTypesIP.UDP:
+        pkt = parseUDP(data[40:], pkt)
+    elif next_header == ProtocolTypesIP.ICMP:
+        pkt = parseICMP(data[40:], pkt)
+    else:
+        pkt = parseData(data[40:], pkt)
+    return pkt
 
 def parseEther(data):
+    # In retrospect, I should have made this a classmethod inside the Ether class, oh well.
     # Parse Ethernet
     eth = data[:ethernetLen]
     dst, src, type = struct.unpack('!6s6sH', eth)
@@ -295,5 +314,5 @@ def sniff(ismatch, onmatch, exitAfterFirstMatch=False, timeout=None):
             raise TimeoutError("sendreceive() timed out when sending packet", repr(pkt), '\nHas timed out')
 
 if __name__ == "__main__":
-    pkt = Ether(dst="01:00:5e:00:00:fb")/IP(dst="224.0.0.251", ttl=1)/UDP(dport=5353)/DNS(qd=DNSQR(qname="ORIPC.local"))
+    pkt = Ether(dst="01:00:5e:00:00:fb") / IP(pdst="224.0.0.251", ttl=1) / UDP(dport=5353) / DNS(qd=DNSQR(qname="ORIPC.local"))
     print(sendreceive(pkt, flipIP=False))

@@ -1,6 +1,7 @@
 import struct
 from Layer import Layer
-from HelperFuncs import RandShort, ipv4ToBytes, isIpv4, Bidict
+from HelperFuncs import RandShort, ipv4ToBytes, isIpv4, Bidict, ipv6ToBytes, isIpv6
+
 
 # noinspection SpellCheckingInspection
 # https://datatracker.ietf.org/doc/html/rfc1035#section-4.1.1
@@ -106,7 +107,8 @@ class DNSRR(Layer):
 
         if not isinstance(self.rdata, bytes) and isIpv4(self.rdata):
             self.rdata = ipv4ToBytes(self.rdata)
-
+        elif not isinstance(self.rdata, bytes) and isIpv6(self.rdata):
+            self.rdata = ipv6ToBytes(self.rdata)
 
 # noinspection SpellCheckingInspection
 class DNS(Layer):

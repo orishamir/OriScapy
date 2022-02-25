@@ -10,6 +10,9 @@ from abc import ABCMeta, abstractmethod
 
 # https://datatracker.ietf.org/doc/html/rfc2460#section-3
 # https://en.wikipedia.org/wiki/IPv6_packet
+from Udp import UDP
+
+
 class IPv6(Layer):
     _my__protocol = ProtocolTypes.IPv6
     _mac_dst_addr = "33:33:ff:7a:b3:24"
@@ -52,7 +55,7 @@ class IPv6(Layer):
         pkt += srcbytes
         pkt += dstbytes
         if hasattr(self, 'data'):
-            if isinstance(self.data, ICMPv6):
+            if isinstance(self.data, ICMPv6 | UDP):
                 pkt += self.data.toBytes(srcbytes, dstbytes)
             else:
                 pkt += bytes(self.data)

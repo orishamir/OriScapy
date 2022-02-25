@@ -36,9 +36,9 @@ class IP(Layer):
 
     data = b''
 
-    def __init__(self, *, src=None, dst=None, ttl=64, protocol=ProtocolTypesIP.ICMP, id=None):
-        self.psrc      =  src
-        self.pdst      =  dst
+    def __init__(self, *, psrc=None, pdst=None, ttl=64, protocol=ProtocolTypesIP.ICMP, id=None):
+        self.psrc      =  psrc
+        self.pdst      =  pdst
         self.ttl       =  ttl
         self.protocol  =  protocol
         self.id        =  id
