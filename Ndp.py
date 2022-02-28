@@ -69,19 +69,20 @@ class NdpLLAddrOption(NDPOption):
 
 # https://datatracker.ietf.org/doc/html/rfc4861#section-4.6.2
 class NdpPrefixInfoOption(NDPOption):
-    def __init__(self, prefixlen, flagL, flagA, validlifetime, preflifetime, prefix):
+    def __init__(self, prefixlen, flagL, flagA, flagR, validlifetime, preflifetime, prefix):
         super(NdpPrefixInfoOption, self).__init__(type=OptionTypes.prefix_info, length=4)
 
         self.prefixlen = prefixlen
         self.flagL = flagL
         self.flagA = flagA
+        self.flagR = flagR
         self.validlifetime = validlifetime
         self.preflifetime = preflifetime
         self.prefix = prefix
 
     def __bytes__(self):
         pkt = super(NdpPrefixInfoOption, self).__bytes__()  # type and length
-        pkt += struct.pack("!BB", self.prefixlen, (self.flagL << 7) | (self.flagA << 6))
+        pkt += struct.pack("!BB", self.prefixlen, (self.flagL << 7) | (self.flagA << 6) | (self.flagR << 5))
         pkt += struct.pack("!LL", self.validlifetime, self.preflifetime)
         pkt += b'\x00'*4
         pkt += ipv6ToBytes(self.prefix)
@@ -169,12 +170,12 @@ class NDPRouterAdv(ICMPv6):
             # generate options automatically
             options = []
             mtuoption = NdpMTUOption()
-            prefixinfo = NdpPrefixInfoOption(64, 0, 0, self.lifetime, self.lifetime, self.prefix)
             sourcell = NdpLLAddrOption(issrc=True, addr=self.lladdr)
+            prefixinfo = NdpPrefixInfoOption(64, 1, 1, 1, self.lifetime, self.lifetime, self.prefix)
 
             options.append(mtuoption)
-            options.append(prefixinfo)
             options.append(sourcell)
+            options.append(prefixinfo)
             self._options = options
 
 # https://datatracker.ietf.org/doc/html/rfc4861#section-4.1

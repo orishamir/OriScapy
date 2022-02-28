@@ -23,6 +23,7 @@ def chksum16bit(packet):
     return ~total + 0x10000 & 0xffff
 
 def mac2bytes(mac: str):
+    mac = mac.replace("-", ":")
     bts = mac.split(":")
     if len(bts) != 6:
         raise ValueError(f"{mac} not in correct MAC address format")
@@ -49,6 +50,7 @@ def bytesToMac(bts: bytes):
     return ':'.join(hex(x)[2:].zfill(2) for x in bts)
 
 def isIpv4(ip: str):
+    # There has to be a better way to do this
     try:
         ipv4ToBytes(ip)
     except ValueError:
@@ -56,6 +58,7 @@ def isIpv4(ip: str):
     return True
 
 def isIpv6(ip: str):
+    # There has to be a better way to do this
     try:
         ipv6ToBytes(ip)
     except ValueError:
@@ -94,15 +97,55 @@ def isBroadCastAddr(tstIp, mask: int):
     net = _ipaddress.ip_network(f"{tstIp}/{mask.bit_count()}")
     return tstIp == '255.255.255.255' or net.broadcast_address == tstIp
 
-# create function to create random mac address
 def randomMac():
-    mac = [0x00, 0x16, 0x3e,
+    mac = [b'\xde'[0], b"\xad"[0], 3,
            _random.randint(0x00, 0x7f),
            _random.randint(0x00, 0xff),
            _random.randint(0x00, 0xff)]
     return ':'.join(map(lambda x: '%02x' % x, mac))
 
-# create function to create random ipv4 address
+def randomIpv6(isLocal=False, isGlobal=False, isSolicit=False, isPrefix=False, prefixLen=64):
+    if isSolicit:
+        raise NotImplementedError("Solicitation messages are not implemented yet")
+        return 'ff02::1:ff00:0'
+    elif isLocal:
+        start = 'fe80:'  # Link-local unicast starts with fe80::/10 but we use /64
+        bytestoadd = 16//2
+    elif isGlobal:
+        start = '2a01'
+        bytestoadd = 16-2
+    elif isPrefix:
+        return _randPrefix(prefixLen)
+    else:
+        start = ''
+        bytestoadd = 16
+
+    for i in range(bytestoadd):
+        if i % 2 == 0:
+            start += ':'
+        start += '%02x' % _random.randint(0, 0xff)
+    return start
+
+def generateSoliAddr(unicastAddr):
+    # https://datatracker.ietf.org/doc/html/rfc4291#section-2.7.1
+    base = "ff02::1:ff"
+    unicastAddr = _ipaddress.IPv6Address(unicastAddr).exploded
+    return base + unicastAddr[-7:]
+
+def _randPrefix(prefixLen):
+    assert prefixLen % 8 == 0, "Prefix length must be a multiple of 8"
+    prefixLen //= 8
+    start = '2a01'
+    prefixLen -= 2
+
+    for i in range(prefixLen):
+        if i % 2 == 0:
+            start += ':'
+        start += '%02x' % _random.randint(0, 0xff)
+    start += '::'
+    return start
+
+
 def randomIpv4():
     ip = [_random.randint(0, 255) for i in range(4)]
     return '.'.join(map(str, ip))
@@ -123,6 +166,7 @@ class ProtocolTypes:
     ARP     = 0x0806
     default = 0x9000
     LLDP    = 0x88CC
+    EAPoL   = 0x888E
 
 # IPv4 protocol nums: https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers
 class ProtocolTypesIP:

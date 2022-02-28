@@ -234,11 +234,18 @@ def parseDNS(data):
         pkt = pkt/Raw(load=data)
     return pkt
 
-def send(pkt: Ether):
-    assert isinstance(pkt, Ether | bytes), 'pkt must be of type Ethernet or Bytes to be sent.'
+def send(pkt: Ether, count=1, interval=0, verbose=False):
+    assert isinstance(pkt, Ether), 'pkt must be of type Ethernet to be sent.'
     bts = pkt.__bytes__()
     assert len(bts) == 1, "Does not support sending fragmented packets as of now."
-    send_sock.send(bts[0])
+
+    for _ in range(count):
+        send_sock.send(bts[0])
+        if verbose:
+            print(". ", end="")
+        time.sleep(interval)
+    if verbose:
+        print()
 
 def _is_response(res, pkt, *, flipIP, flipMAC, flipPort):
     # Check if the layers are not the same.
@@ -290,7 +297,6 @@ def sendreceive(pkt: Ether, flipIP=True, flipMAC=False, flipPort=True, timeout=5
 
 def sniff(ismatch, onmatch, exitAfterFirstMatch=False, timeout=None):
     """
-
     :param ismatch: The function to check if a packet is a match
     :param onmatch: The function to call when a matched packet is found
     :param exitAfterFirstMatch: Should the function exist after the first match
@@ -311,8 +317,4 @@ def sniff(ismatch, onmatch, exitAfterFirstMatch=False, timeout=None):
             if exitAfterFirstMatch:
                 return
         if timeout and time.time() - st > timeout:
-            raise TimeoutError("sendreceive() timed out when sending packet", repr(pkt), '\nHas timed out')
-
-if __name__ == "__main__":
-    pkt = Ether(dst="01:00:5e:00:00:fb") / IP(pdst="224.0.0.251", ttl=1) / UDP(dport=5353) / DNS(qd=DNSQR(qname="ORIPC.local"))
-    print(sendreceive(pkt, flipIP=False))
+            raise TimeoutError("Sniff function timed out")  # Should this be an error?
