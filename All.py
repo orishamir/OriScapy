@@ -1,5 +1,5 @@
 from Sendreceive import sendreceive, send, sniff, prepareSockets
-from HelperFuncs import RandShort, randomMac, RandInt, randomIpv6
+from HelperFuncs import RandShort, randomMac, RandInt, randomIpv6, generateSoliAddr
 from Dns import DNS, DNSQR, DNSRR
 from Ethernet import Ether
 from Icmp import ICMP
@@ -28,5 +28,5 @@ class conf(metaclass=MyMeta):
 srp1 = srp = sr = sendreceive
 __all__ = ['ARP', 'IP', 'Ether', 'ICMP', 'UDP', 'DNS', 'DNSQR', 'DNSRR', 'IPv6', 'ICMPv6',
            'NdpDnsOption', 'NdpLLAddrOption', 'NdpMTUOption', 'NdpPrefixInfoOption', 'NDPRouterAdv', 'NDPRouterSol',
-           'RandShort', 'RandInt', 'randomMac','randomIpv6',
+           'RandShort', 'RandInt', 'randomMac','randomIpv6', 'generateSoliAddr',
            'send', 'sr', 'srp1', 'srp', 'conf', 'sniff', 'sendreceive']
