@@ -9,7 +9,7 @@ from Ip import IP
 from Ipv6 import IPv6
 from Icmpv6 import ICMPv6
 import conf as _conf
-from Ndp import NdpPrefixInfoOption, NdpLLAddrOption, NdpMTUOption, NdpDnsOption, NDPRouterAdv, NDPRouterSol
+from Ndp import NdpPrefixInfoOption, NdpLLAddrOption, NdpMTUOption, NdpDnsOption, NDPRouterAdv, NDPRouterSol, NdpRouteInfoOption
 
 
 class MyMeta(type):
@@ -27,6 +27,7 @@ class conf(metaclass=MyMeta):
 
 srp1 = srp = sr = sendreceive
 __all__ = ['ARP', 'IP', 'Ether', 'ICMP', 'UDP', 'DNS', 'DNSQR', 'DNSRR', 'IPv6', 'ICMPv6',
-           'NdpDnsOption', 'NdpLLAddrOption', 'NdpMTUOption', 'NdpPrefixInfoOption', 'NDPRouterAdv', 'NDPRouterSol',
+           'NdpDnsOption', 'NdpLLAddrOption', 'NdpMTUOption', 'NdpPrefixInfoOption', 'NdpRouteInfoOption',
+           'NDPRouterAdv', 'NDPRouterSol',
            'RandShort', 'RandInt', 'randomMac','randomIpv6', 'generateSoliAddr',
            'send', 'sr', 'srp1', 'srp', 'conf', 'sniff', 'sendreceive']

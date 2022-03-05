@@ -72,6 +72,7 @@ def getIpAddr(iface):
     return _netifaces.ifaddresses(iface)[_netifaces.AF_INET][0]['addr']
 
 def getIpv6Addr(iface):
+    # TODO: Add support for choosing which type of address to use (link-local, global, etc)
     return _netifaces.ifaddresses(iface)[_netifaces.AF_INET6][0]['addr']
 
 def addr2concatbits(addr):
@@ -98,7 +99,7 @@ def isBroadCastAddr(tstIp, mask: int):
     return tstIp == '255.255.255.255' or net.broadcast_address == tstIp
 
 def randomMac():
-    mac = [b'\xde'[0], b"\xad"[0], 3,
+    mac = [0xde, 0xad, 3,
            _random.randint(0x00, 0x7f),
            _random.randint(0x00, 0xff),
            _random.randint(0x00, 0xff)]
@@ -106,8 +107,8 @@ def randomMac():
 
 def randomIpv6(isLocal=False, isGlobal=False, isSolicit=False, isPrefix=False, prefixLen=64):
     if isSolicit:
-        raise NotImplementedError("Solicitation messages are not implemented yet")
-        return 'ff02::1:ff00:0'
+        # raise NotImplementedError("Solicitation messages are not implemented yet")
+        return generateSoliAddr(randomIpv6(isLocal=True))
     elif isLocal:
         start = 'fe80:'  # Link-local unicast starts with fe80::/10 but we use /64
         bytestoadd = 16//2
@@ -145,10 +146,8 @@ def _randPrefix(prefixLen):
     start += '::'
     return start
 
-
 def randomIpv4():
-    ip = [_random.randint(0, 255) for i in range(4)]
-    return '.'.join(map(str, ip))
+    return bytesToIpv4(_random.randbytes(4))
 
 def isMulticastAddr(tstIp: str):
     return _ipaddress.IPv4Address(tstIp).is_multicast

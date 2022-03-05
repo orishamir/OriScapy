@@ -14,9 +14,9 @@ mac = srp1(pkt)[ARP].hwsrc
 ```
 
 Scapy automatically fills a good deal of fields of the ARP header.    
-for example, you don't have to worry about these fields:
+For instance, you don't have to worry about these fields:
 ```text
-  hwtype, ptype, hwlen, plen, op, hwsrc, psrc, hwdst      
+hwtype, ptype, hwlen, plen, op, hwsrc, psrc, hwdst      
 ```
 Which Scapy automatically fills according to the [RFC Specification](https://datatracker.ietf.org/doc/html/rfc826) / [ARP packet header](https://en.wikipedia.org/wiki/Address_Resolution_Protocol#Packet_structure)
 
@@ -34,12 +34,13 @@ Also, the `Source MAC` and the `Destination MAC` are automatically detected and 
 And so I wanted for my knowledge about Networking, to learn more about  
 the most famous packets' header format.   
 And to do that I thought to make my own Scapy which would support    
-Ethernet, ARP, IP, ICMP, UDP, DNS and maybe more in the future.
+firstly the most common headers, such as Ethernet, ARP, IP, ICMP, UDP
+and TCP. Now the project supports more header types.
 
 ## Usage
 **First of all, don't. Please just use [Scapy](https://pypi.org/project/scapy/).**   
 But if you insist, then its basically the same as Scapy. Here are some examples:    
-**__Note that OriScapy only works on Linux.__**     
+**__Note that OriScapy only works on Linux for sending and receiving packets.__**     
 #### ARP Queries
 
 ```python

@@ -16,6 +16,7 @@ class OptionTypes:
     redirect_header  = 4
     MTU              = 5
 
+    RouteInformation = 24
     DNSServer        = 25
 
 OptionTypes_bidict = Bidict(vars(OptionTypes))
@@ -110,6 +111,27 @@ class NdpDnsOption(NDPOption):
 
     def __len__(self):
         return 1+1+2+4+len(self.addresses)*16
+
+# https://datatracker.ietf.org/doc/html/rfc4191#section-2.3
+class NdpRouteInfoOption(NDPOption):
+    # A bit wrong with the len and length=3, but works for now.
+    def __init__(self, prefixlen, prf, routelifetime, prefix=None):
+        super(NdpRouteInfoOption, self).__init__(type=OptionTypes.RouteInformation, length=3)
+        self.prefixlen = prefixlen
+        self.prf = prf
+        self.routelifetime = routelifetime
+        self.prefix = prefix
+
+    def __bytes__(self):
+        pkt = super(NdpRouteInfoOption, self).__bytes__()  # type and length
+        pkt += struct.pack("!B", self.prefixlen)
+        pkt += struct.pack("!B", self.prf << 3)
+        pkt += struct.pack("!L", self.routelifetime)
+        pkt += ipv6ToBytes(self.prefix)
+        return pkt
+
+    def __len__(self):
+        return 1+1+1+1+4+16
 
 # https://datatracker.ietf.org/doc/html/rfc4861#section-4.2
 class NDPRouterAdv(ICMPv6):
