@@ -7,6 +7,7 @@ from HelperFuncs import RandShort
 # https://datatracker.ietf.org/doc/html/rfc792
 class ICMP(Layer):
     _my__protocol = ProtocolTypesIP.ICMP
+
     # https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol#Control_messages
     class TypesICMP:
         echo_reply         = 0
