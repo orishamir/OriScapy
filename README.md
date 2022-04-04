@@ -1,6 +1,10 @@
 # OriScapy
 This is a custom-made version of the well known [Scapy library for python](https://scapy.net/).
 
+>Scapy is a powerful interactive packet manipulation program.
+It is able to forge or decode packets of a wide number of protocols, 
+send them on the wire, capture them, match requests and replies, and much more. (See Usage examples)
+
 
 ## Rationale
 In my journey of learning about the fascinating world of Networking, I realised that Scapy    
@@ -74,7 +78,7 @@ poison(pkt, count=50)
 from All import *  
   
 # Resolve google.com by querying google's DNS server (8.8.8.8)  
-pkt = Ether()/IP(dst="8.8.8.8")/UDP(dport=53)/DNS(qd=DNSQR(qname="google.com"))  
+pkt = Ether()/IP(pdst="8.8.8.8")/UDP(dport=53)/DNS(qd=DNSQR(qname="google.com"))  
 ans = sendreceive(pkt, timeout=3)
 
 for answer_record in ans.an:
@@ -86,7 +90,7 @@ for answer_record in ans.an:
 from All import *
 
 def dns_amp(target_ip):
-    pkt = Ether()/IP(src=target_ip, dst="ip.of.dns.server")/UDP(dport=53)/DNS(rd=1, qd=DNSQR(qname="google.com", qtype=255))
+    pkt = Ether()/IP(psrc=target_ip, dst="ip.of.dns.server")/UDP(dport=53)/DNS(rd=1, qd=DNSQR(qname="google.com", qtype=255))
     send(pkt)
 
 dns_amp("192.168.1.2")
@@ -100,7 +104,7 @@ from All import *
 # a DNS Query is sent to multicast ip "224.0.0.251" and port 5353, also known as  
 # multicast-DNS (mDNS). Inside the query, the qname should be "hostname"+".local"  
   
-pkt = Ether()/IP(dst="224.0.0.251")/UDP(dport=5353)/DNS(qd=DNSQR(qname="myHostname.local"))  
+pkt = Ether()/IP(pdst="224.0.0.251")/UDP(dport=5353)/DNS(qd=DNSQR(qname="myHostname.local"))  
   
 # IP may come back either to the multicast address, or directly to the host PC's IP.
 # Which means that you can't tell whether a packet is an answer to `pkt` based on
@@ -192,7 +196,7 @@ for _ in range(500):
 from All import *
 
 # Ping google's DNS server
-pkt = Ether()/IP(dst="8.8.8.8")/ICMP()
+pkt = Ether()/IP(pdst="8.8.8.8")/ICMP()
 res = sendreceive(pkt, timeout=2)
 print(res)
 ```

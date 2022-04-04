@@ -3,7 +3,7 @@ from HelperFuncs import *
 from Arp import ARP
 from Ip import IP
 import Sendreceive
-from conf import iface
+import conf
 import struct
 from Ipv6 import IPv6
 
@@ -47,7 +47,7 @@ class Ether(Layer):
         self.etherType = ethType
 
         if self.src is None:
-            self.src = getMacAddr(iface)
+            self.src = getMacAddr(conf.iface)
 
     def __bytes__(self):
         # return as raw bytes
@@ -87,7 +87,7 @@ class Ether(Layer):
 
     def _autocomplete(self):
         if self.src is None:
-            self.src = getMacAddr(iface)
+            self.src = getMacAddr(conf.iface)
         if not hasattr(self, 'data'):
             return
         # Determine self.etherType based on data
@@ -117,18 +117,18 @@ class Ether(Layer):
                 # if IP in self:
                 dst_ip = self[IP].pdst
                 # If same subnet, use the direct PC's mac
-                mask = getSubnetmask(iface)
+                mask = getSubnetmask(conf.iface)
                 if isMulticastAddr(dst_ip):
                     print("WARNING: dst MAC address not specified when sending multicast. Set automatically to broadcast")
                     self.dst = "ff:ff:ff:ff:ff:ff"
                 elif isBroadCastAddr(dst_ip, mask):
                     self.dst = "ff:ff:ff:ff:ff:ff"
-                elif isSameSubnet(dst_ip, getIpAddr(iface), mask):
+                elif isSameSubnet(dst_ip, getIpAddr(conf.iface), mask):
                     _resolve = Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(pdst=dst_ip)
                     self.dst = Sendreceive.sendreceive(_resolve)[ARP].hwsrc
                 else:
                     # else send to router
-                    _resolve = Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(pdst=getDefaultGateway(iface))
+                    _resolve = Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(pdst=getDefaultGateway(conf.iface))
                     # print(_resolve.etherType)
                     self.dst = Sendreceive.sendreceive(_resolve, timeout=10)[ARP].hwsrc
 

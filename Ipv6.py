@@ -26,7 +26,7 @@ class IPv6(Layer):
     psrc           = None  # Source IP
     pdst           = None  # Destination IP
 
-    def __init__(self, psrc=None, pdst=None, nextheader=None, traffic_class=None, flow_label=None, hoplimit=None, ttl=None):
+    def __init__(self, *, psrc=None, pdst=None, nextheader=None, traffic_class=None, flow_label=None, hoplimit=None, ttl=None):
         self.traffic_class = traffic_class
         self.flow_label    = flow_label
         self.nextheader    = nextheader

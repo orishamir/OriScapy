@@ -33,8 +33,8 @@ class ICMP(Layer):
     rest_of_header  = None
     data = b'abcdefghijklmnop'
 
-    def __init__(self, *, type_=None, code=None, id=None, seq=None):
-        self.type = type_
+    def __init__(self, *, type=None, code=None, id=None, seq=None):
+        self.type = type
         self.code = code
         self.id   = id
         self.seq  = seq

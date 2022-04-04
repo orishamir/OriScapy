@@ -31,3 +31,4 @@ __all__ = ['ARP', 'IP', 'Ether', 'ICMP', 'UDP', 'DNS', 'DNSQR', 'DNSRR', 'IPv6',
            'NDPRouterAdv', 'NDPRouterSol',
            'RandShort', 'RandInt', 'randomMac','randomIpv6', 'generateSoliAddr',
            'send', 'sr', 'srp1', 'srp', 'conf', 'sniff', 'sendreceive']
+# prepareSockets(conf.iface)

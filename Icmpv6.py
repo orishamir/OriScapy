@@ -17,7 +17,7 @@ class ICMPv6(Layer):
     msg    = b''
 
     @abstractmethod
-    def __init__(self, type=None, code=None, chksum=None):
+    def __init__(self, *, type=None, code=None, chksum=None):
         self.type = type
         self.code = code
         self.chksum = chksum
@@ -45,7 +45,7 @@ class ICMPv6DstUnreach(ICMPv6):
     _my__protocol = ProtocolTypesIP.ICMPv6
     data = b''
 
-    def __init__(self, code=None):
+    def __init__(self, *, code=None):
         super(ICMPv6DstUnreach, self).__init__(type=Icmpv6Types.dst_unreachable, code=code)
 
     def toBytes(self, ipsrcbytes, ipdstbytes):
@@ -69,7 +69,7 @@ class ICMPv6EchoRequest(ICMPv6):
     seq = None
     data = b''
 
-    def __init__(self, id=None, seq=None, code=None):
+    def __init__(self, *, id=None, seq=None, code=None):
         if code is None:
             code = 0
         super(ICMPv6EchoRequest, self).__init__(type=Icmpv6Types.echo_request, code=code)
@@ -97,7 +97,7 @@ class ICMPv6EchoReply(ICMPv6):
     seq = None
     data = b''
 
-    def __init__(self, id=None, seq=None, code=None):
+    def __init__(self, *, id=None, seq=None, code=None):
         if code is None:
             code = 0
         super(ICMPv6EchoReply, self).__init__(type=Icmpv6Types.echo_reply, code=code)

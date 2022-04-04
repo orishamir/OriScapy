@@ -45,7 +45,7 @@ class ARP(Layer):
     hwdst   =  None
     pdst    =  None
 
-    def __init__(self, hwtype=HardwareTypes.Ethernet, ptype=ProtocolTypes.IPv4, opcode=Opcodes.Request,
+    def __init__(self, *, hwtype=HardwareTypes.Ethernet, ptype=ProtocolTypes.IPv4, opcode=Opcodes.Request,
                  pdst=None, hwdst=None, psrc=None, hwsrc=None, psize=4, hwsize=6):
         self.hwtype  =  hwtype
         self.ptype   =  ptype

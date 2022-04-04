@@ -1,5 +1,8 @@
 import socket
 import struct
+
+import netifaces
+
 from HelperFuncs import ProtocolTypes, bytesToMac, bytesToIpv4, ProtocolTypesIP, bytesToIpv6
 from Dns import DNS, DNSQR, DNSRR, QTYPES
 from Ethernet import Ether
@@ -13,19 +16,38 @@ from Ip import IP
 import conf
 import time
 
-def prepareSockets(iface):
-    # https://stackoverflow.com/a/57133488/9100289
-    global recv_sock
-    global send_sock
+LINUX = __import__("os").name.lower() == "posix"
 
-    ETH_P_ALL = 3  # not defined in socket module, sadly...
-    recv_sock = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(ETH_P_ALL))
-    recv_sock.bind((conf.iface, 0))
+if LINUX:
+    def prepareSockets(iface):
+        # https://stackoverflow.com/a/57133488/9100289
+        global recv_sock
+        global send_sock
 
-    send_sock = socket.socket(socket.AF_PACKET, socket.SOCK_RAW)
-    send_sock.bind((conf.iface, 0))
+        ETH_P_ALL = 3  # not defined in socket module, sadly...
+        recv_sock = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(ETH_P_ALL))
+        recv_sock.bind((conf.iface, 0))
 
-    conf.iface = iface
+        send_sock = socket.socket(socket.AF_PACKET, socket.SOCK_RAW)
+        send_sock.bind((conf.iface, 0))
+
+        conf.iface = iface
+else:
+    from winpcapy import WinPcapDevices, WinPcap
+    PREFIX = "\\Device\\NPF_"
+
+    def prepareSockets(iface=None):
+        global send_sock
+        try:
+            # check if iface exists
+            netifaces.ifaddresses(iface)
+        except (ValueError, TypeError):
+            # if not, find the first available interface
+            name, desc = WinPcapDevices.get_matching_device("*")
+            iface = name.split("_")[1]
+
+        conf.iface = iface
+        send_sock = WinPcap(PREFIX + iface, conf.iface)
 
 prepareSockets(conf.iface)
 
@@ -234,13 +256,18 @@ def parseDNS(data):
         pkt = pkt/Raw(load=data)
     return pkt
 
+
 def send(pkt: Ether, count=1, interval=0, verbose=False):
     assert isinstance(pkt, Ether), 'pkt must be of type Ethernet to be sent.'
     bts = pkt.__bytes__()
     assert len(bts) == 1, "Does not support sending fragmented packets as of now."
 
     for _ in range(count):
-        send_sock.send(bts[0])
+        if LINUX:
+            send_sock.send(bts[0])
+        else:
+            with WinPcap(PREFIX + conf.iface) as ss:
+                ss.send(bts[0])
         if verbose:
             print(". ", end="")
         time.sleep(interval)
@@ -279,21 +306,30 @@ def _is_response(res, pkt, *, flipIP, flipMAC, flipPort):
         pktarp: ARP = pkt[ARP]
         return resarp.pdst == pktarp.psrc and resarp.opcode != pktarp.opcode
 
-def sendreceive(pkt: Ether, flipIP=True, flipMAC=False, flipPort=True, timeout=5):
-    send(pkt)
-    st = time.time()
-    while True:
-        res = recv_sock.recvfrom(1500)[0]
-        try:
-            res = parseEther(res)
-        except (ValueError, struct.error, IndexError):
-            continue
-        if res is None:
-            continue
-        if _is_response(res, pkt, flipIP=flipIP, flipMAC=flipMAC, flipPort=flipPort):
-            return res
-        if time.time()-st > timeout:
-            raise TimeoutError("sendreceive() timed out when sending packet", repr(pkt), '\nHas timed out')
+if LINUX:
+    def sendreceive(pkt: Ether, flipIP=True, flipMAC=False, flipPort=True, timeout=5):
+        assert LINUX, "sendreceive is only supported on Linux currently."
+        send(pkt)
+        st = time.time()
+        while True:
+            res = recv_sock.recvfrom(1500)[0]
+            try:
+                res = parseEther(res)
+            except (ValueError, struct.error, IndexError):
+                continue
+            if res is None:
+                continue
+            if _is_response(res, pkt, flipIP=flipIP, flipMAC=flipMAC, flipPort=flipPort):
+                return res
+            if time.time()-st > timeout:
+                raise TimeoutError("sendreceive() timed out when sending packet", repr(pkt), '\nHas timed out')
+else:
+    def sendreceive(pkt: Ether, flipIP=True, flipMAC=False, flipPort=True, timeout=5):
+        send(pkt)
+        st = time.time()
+
+        # with WinPcap(PREFIX + conf.iface) as recv_sock:
+            # recv_sock.run(callback=lambda *_, pktbytes: )
 
 def sniff(ismatch, onmatch, exitAfterFirstMatch=False, timeout=None):
     """

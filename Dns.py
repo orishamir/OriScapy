@@ -23,7 +23,7 @@ class DNSQR(Layer):
     qtype    = None # https://en.wikipedia.org/wiki/List_of_DNS_record_types#Resource_records
     qclass   = None # https://datatracker.ietf.org/doc/html/rfc1035#section-3.2.3
 
-    def __init__(self, qname="", qtype=None, qclass=None):
+    def __init__(self, *, qname, qtype=None, qclass=None):
         self.qname = qname
         self.qtype = qtype
         self.qclass = qclass
@@ -68,7 +68,7 @@ class DNSRR(Layer):
     rdlength   = None   # length of rdata
     rdata      = None   # the actual data
 
-    def __init__(self, name=None, type=None, rclass=None, ttl=None, rdata=None):
+    def __init__(self, *, name=None, type=None, rclass=None, ttl=None, rdata=None):
         self.name   = name
         self.type   = type
         self.rclass = rclass
@@ -127,7 +127,7 @@ class DNS(Layer):
     nscount    = None
     arcount    = None
 
-    def __init__(self, qd=None, an=None, ns=None, ar=None, rd=None, qr=None, ra=None, aa=None, opcode=None, rcode=None, id=None,
+    def __init__(self, *, qd=None, an=None, ns=None, ar=None, rd=None, qr=None, ra=None, aa=None, opcode=None, rcode=None, id=None,
                  qdcount=None, ancount=None, nscount=None, arcount=None):
         assert isinstance(qd, DNSQR | None | list), "ValueError: qd should be of type DNSQR (DNS Query Record)"
         assert isinstance(an, DNSRR | None | list), "ValueError: an should be of type DNSRR (DNS Resource Record)"

@@ -134,7 +134,7 @@ def generateSoliAddr(unicastAddr):
     return base + unicastAddr[-7:]
 
 def _randPrefix(prefixLen):
-    assert prefixLen % 8 == 0, "Prefix length must be a multiple of 8"
+    assert prefixLen % 8 == 0, "Prefix length must be a multiple of 8"  # TODO: Add support for other prefix lengths
     prefixLen //= 8
     start = '2a01'
     prefixLen -= 2
@@ -150,6 +150,7 @@ def randomIpv4():
     return bytesToIpv4(_random.randbytes(4))
 
 def isMulticastAddr(tstIp: str):
+    # First 4 bits of the first byte must be 0b1110
     return _ipaddress.IPv4Address(tstIp).is_multicast
 
 def RandShort():
@@ -170,6 +171,7 @@ class ProtocolTypes:
 # IPv4 protocol nums: https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers
 class ProtocolTypesIP:
     ICMP       = 0x1
+    IGMP       = 0x2
     TCP        = 0x6
     UDP        = 0x11
     IPv6       = 0x29
@@ -186,14 +188,14 @@ class ProtocolTypesIP:
 # https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol_for_IPv6#Types
 class Icmpv6Types:
     dst_unreachable = 1
-    time_exceeded = 3
-    echo_request = 128
-    echo_reply = 129
-    router_soli = 133
-    router_adv = 134
-    neighbor_soli = 135
-    neighbor_adv = 136
-    redirect_msg = 137
+    time_exceeded   = 3
+    echo_request    = 128
+    echo_reply      = 129
+    router_soli     = 133
+    router_adv      = 134
+    neighbor_soli   = 135
+    neighbor_adv    = 136
+    redirect_msg    = 137
 
 icmpv4TypesAndCodes = {
     0: 'echo_reply',
@@ -225,8 +227,8 @@ icmpv4TypesAndCodes = {
 
 class AddressesType:
     _ipv6_broadcast = ""  # does not exist lol (there is multicast to all nodes tho)
-    mac_broadcast = "ff:ff:ff:ff:ff:ff"
-    ipv4_broadcast = "255.255.255.255"
+    mac_broadcast   = "ff:ff:ff:ff:ff:ff"
+    ipv4_broadcast  = "255.255.255.255"
 
     ipv4_empty = "0.0.0.0"
     ipv6_empty = "::"
